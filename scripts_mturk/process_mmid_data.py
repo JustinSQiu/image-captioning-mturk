@@ -43,12 +43,11 @@ for file_name in os.listdir(folder_path):
             parts = line.strip().split('\t')
             if len(parts) >= 2:
                 original_word = parts[0]
-                translations = parts[1:]
-                for translation in translations:
-                    if any(substr in translation for substr in culturally_distinct_words):
-                        data.append(
-                            {'translated_english_word': translation, 'original_word': original_word, 'original_index': index + 1, 'language': language}
-                        )
+                translation = parts[1]
+                if any(substr in translation for substr in culturally_distinct_words):
+                    data.append(
+                        {'translated_english_word': translation, 'original_word': original_word, 'original_index': index, 'language': language}
+                    )
 
 df = pd.DataFrame(data)
 output_path = 'mmid/output/filtered_translations.csv'
