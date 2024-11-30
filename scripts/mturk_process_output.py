@@ -7,8 +7,7 @@ import os
 import pandas as pd
 import requests
 
-# csv_file = 'mturk_output/Batch_411295_batch_results.csv'
-csv_file = 'mturk_output/Batch_411295_batch_results (3).csv'
+csv_file = 'mturk_output/Batch_411302_batch_results.csv'
 output_folder = 'audio'
 
 df = pd.read_csv(csv_file)

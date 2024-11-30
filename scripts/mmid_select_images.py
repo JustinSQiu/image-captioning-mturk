@@ -5,9 +5,9 @@ import json
 import requests
 from concurrent.futures import ThreadPoolExecutor
 
-csv_path = 'mmid/output/filtered_translations.csv'
+csv_path = 'mmid/output/filtered_translations_new.csv'
 mmid_folder = 'mmid'
-output_base = 'mmid/output_images'
+output_base = 'mmid/output_images_new'
 
 os.makedirs(output_base, exist_ok=True)
 
@@ -23,10 +23,13 @@ def download_image(args):
             image_extension = os.path.splitext(image_link)[-1]
             new_file_name = f'{translated_word}-{original_index}-{key}{image_extension}'
             destination_file = os.path.join(language_output_folder, new_file_name)
-            with open(destination_file, 'wb') as img_file:
-                img_file.write(response.content)
-            file_size = os.path.getsize(destination_file)
-            print(f'Downloaded {image_link} to {destination_file} (Size: {file_size} bytes)')
+            if os.path.exists(destination_file):
+                print(f"File {new_file_name} already exists. Skipping download.")
+            else:
+                with open(destination_file, 'wb') as img_file:
+                    img_file.write(response.content)
+                file_size = os.path.getsize(destination_file)
+                print(f'Downloaded {image_link} to {destination_file} (Size: {file_size} bytes)')
         else:
             print(f'Failed to download {image_link} (Status code: {response.status_code})')
     except Exception as e:

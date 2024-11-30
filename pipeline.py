@@ -10,8 +10,9 @@ model = whisper.load_model('base')
 
 audio_folder = '/Users/Justin Qiu/Desktop/senior_thesis/image-captioning-mturk/audio'
 batch_csv_paths = [
-    '/Users/Justin Qiu/Desktop/senior_thesis/image-captioning-mturk/mturk_output/Batch_411295_batch_results.csv',
-    '/Users/Justin Qiu/Desktop/senior_thesis/image-captioning-mturk/mturk_output/Batch_411298_batch_results.csv',
+    '/Users/Justin Qiu/Desktop/senior_thesis/image-captioning-mturk/mturk_output/Batch_411295_batch_results_2.csv',
+    '/Users/Justin Qiu/Desktop/senior_thesis/image-captioning-mturk/mturk_output/Batch_411298_batch_results_2.csv',
+    '/Users/Justin Qiu/Desktop/senior_thesis/image-captioning-mturk/mturk_output/Batch_411302_batch_results.csv'
 ]
 
 metadata_df = pd.concat([pd.read_csv(csv_path) for csv_path in batch_csv_paths], ignore_index=True)

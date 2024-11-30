@@ -4,7 +4,7 @@ from PIL import Image
 import pandas as pd
 
 input_base = 'mmid/output_images'  # Original images folder
-output_base_filtered = 'mmid_images'  # New folder for filtered images
+output_base_filtered = 'mmid_images_new'  # New folder for filtered images
 
 os.makedirs(output_base_filtered, exist_ok=True)
 
@@ -30,7 +30,7 @@ for language_folder in os.listdir(input_base):
             image_path = os.path.join(language_input_folder, image_file)
             
             # Check file size and if the image is valid
-            if os.path.getsize(image_path) >= 100 * 1024 and is_valid_image(image_path):  # 100KB
+            if os.path.getsize(image_path) >= 50 * 1024 and is_valid_image(image_path):  # 100KB
                 # If the image passes, copy it to the new folder
                 destination_file = os.path.join(language_output_folder, image_file)
                 shutil.copy(image_path, destination_file)
