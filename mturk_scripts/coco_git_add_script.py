@@ -4,7 +4,7 @@ import subprocess
 from math import ceil
 
 # Paths
-filtered_csv_path = 'output/filtered_file_list.csv'
+filtered_csv_path = 'mturk_upload_files/filtered_file_list.csv'
 filtered_images_folder = 'filtered_images'
 
 # Read file names from the CSV

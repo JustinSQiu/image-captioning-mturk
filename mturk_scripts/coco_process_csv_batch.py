@@ -11,4 +11,4 @@ url_prefix = "https://raw.githubusercontent.com/JustinSQiu/image-captioning-mtur
 image_data = pd.read_csv('output/filtered_file_list.csv', header=None, names=['image_name'])
 # image_data = image_data[image_data['image_name'] <= max_image_name]
 image_data['image_url'] = url_prefix + image_data['image_name']
-image_data[['image_url']].to_csv('output/mturk_batch.csv', index=False)
+image_data[['image_url']].to_csv('mturk_upload_files/mturk_batch.csv', index=False)

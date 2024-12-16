@@ -3,7 +3,7 @@ import pandas as pd
 import random
 
 base_folder = 'mmid_images'  # Base folder containing language subfolders
-output_folder = 'output'
+output_folder = 'mturk_upload_files'
 base_url = 'https://raw.githubusercontent.com/JustinSQiu/image-captioning-mturk/master/mmid_images/'
 
 os.makedirs(output_folder, exist_ok=True)  # Ensure output folder exists
