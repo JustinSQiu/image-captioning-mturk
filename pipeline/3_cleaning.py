@@ -8,7 +8,7 @@ def check_lang(val):
         lang = 'UNKNOWN'
     return lang
 
-input_file = 'processed_output/output_transcription_new.csv'
+input_file = 'processed_output/output_transcription_2.csv'
 output_file = 'processed_output/output_transcription_errors.csv'
 cleaned_file = 'processed_output/output_transcription_cleaned.csv'
 
