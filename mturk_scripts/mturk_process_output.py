@@ -8,19 +8,22 @@ import pandas as pd
 import requests
 
 csv_files = [
-    'mturk_output/Batch_411295_batch_results.csv',
-    'mturk_output/Batch_411298_batch_results.csv',
-    'mturk_output/Batch_411301_batch_results.csv',
-    'mturk_output/Batch_411302_batch_results.csv',
-    'mturk_output/Batch_411304_batch_results.csv',
-    'mturk_output/Batch_411306_batch_results.csv',
-    'mturk_output/Batch_411316_batch_results.csv',
-    'mturk_output/Batch_411358_batch_results.csv',
-    'mturk_output/Batch_411359_batch_results.csv',
-    'mturk_output/Batch_411361_batch_results.csv',
-    'mturk_output/Batch_411363_batch_results.csv',
-    'mturk_output/Batch_411364_batch_results.csv',
-    'mturk_output/Batch_411533_batch_results.csv',
+    # 'mturk_output/Batch_413468_batch_results (2).csv',
+    # 'mturk_output/Batch_413478_batch_results (2).csv',
+    # 'mturk_output/Batch_413643_batch_results (1).csv',
+    # 'mturk_output/Batch_413644_batch_results (2).csv',
+    # 'mturk_output/Batch_413647_batch_results (2).csv',
+    # 'mturk_output/Batch_413648_batch_results (1).csv',
+    # 'mturk_output/Batch_413649_batch_results (2).csv',
+    # 'mturk_output/Batch_413653_batch_results.csv',
+    # 'mturk_output/Batch_413654_batch_results (1).csv',
+    # 'mturk_output/Batch_413655_batch_results (1).csv',
+    # 'mturk_output/Batch_413658_batch_results (2).csv',
+    # 'mturk_output/Batch_413660_batch_results (2).csv',
+    # 'mturk_output/Batch_414050_batch_results.csv',
+    # 'mturk_output/Batch_414051_batch_results.csv',
+    'mturk_output/Batch_414051_batch_results_processed.csv',
+    # 'mturk_output/Batch_414052_batch_results.csv',
 ]
 output_folder = 'audio'
 

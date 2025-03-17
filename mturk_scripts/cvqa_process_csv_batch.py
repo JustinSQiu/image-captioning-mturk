@@ -6,7 +6,7 @@ ls -1 > ../{language}_file_list.csv
 
 import pandas as pd
 
-language = 'Amharic'
+language = 'Urdu'
 
 url_prefix = f"https://raw.githubusercontent.com/JustinSQiu/image-captioning-mturk/master/cvqa/{language}_images/"
 image_data = pd.read_csv(f'cvqa/{language}_file_list.csv', header=None, names=['image_name'])
