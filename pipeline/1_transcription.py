@@ -31,7 +31,7 @@ def transcribe(audio_path, language):
 if __name__ == '__main__':
     audio_folder = '/Users/Justin Qiu/Desktop/senior_thesis/image-captioning-mturk/audio'
     mturk_folder = '/Users/Justin Qiu/Desktop/senior_thesis/image-captioning-mturk/mturk_output/'
-    output_csv = 'processed_output/output_transcription.csv'
+    output_csv = 'processed_output/output_transcription_2.csv'
     batch_csv_paths = glob.glob(f'{mturk_folder}/*_batch_results.csv')
 
     metadata_df = pd.concat([pd.read_csv(csv_path) for csv_path in batch_csv_paths], ignore_index=True)
@@ -60,8 +60,11 @@ if __name__ == '__main__':
             # skip if already exists or language is not Hindi or Telugu
             if vocaroo_id not in existing_df['id'].values:
                 print(f'MISSING {vocaroo_id}')
-            if not (language == 'Hindi' or language == 'Telugu'):
+            else:
+                print(f'SKIPPING {vocaroo_id}')
                 continue
+            # if not (language == 'Hindi' or language == 'Telugu'):
+            #     continue
 
             audio_path = os.path.join(audio_folder, audio_file)
             transcription = transcribe(audio_path, language)
@@ -81,5 +84,5 @@ if __name__ == '__main__':
 
     new_df = pd.DataFrame(data)
     combined_df = pd.concat([existing_df, new_df], ignore_index=True).drop_duplicates(subset=['id'], keep='last')
-    combined_df.to_csv('processed_output/output_transcription_2.csv', index=False)
+    combined_df.to_csv('processed_output/output_transcription_cvqa.csv', index=False)
     print(combined_df)
