@@ -10,17 +10,14 @@ def check_lang(val):
     return lang
 
 
-
 pd.options.display.max_rows = 100
 pd.options.display.max_colwidth = 300
 pd.options.display.max_columns = 100
 
-df = pd.read_csv('/Users/Justin Qiu/Desktop/senior_thesis/image-captioning-mturk/processed_output/output_transcription_new.csv')
+df = pd.read_csv('/home1/j/jsq/dev/image-captioning-mturk/processed_output/output_transcription_cvqa.csv')
 
-# df = df[df['transcription'].str.len() < 300]
-
-df = df[df['language'] == 'Norwegian']
-print(df)
+df = df[df['language'] == 'Hindi']
+print(df['transcription'])
 print(len(df))
 
 # # given string, calculate percent of it that's alphabet
