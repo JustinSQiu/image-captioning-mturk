@@ -12,16 +12,18 @@ import whisper
 from transformers import pipeline
 
 from huggingface_hub import login
+from keys import hf_token
 
-login(token="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")
+login(token=hf_token)
 
 print('Loading models...', flush=True)
 
 warnings.filterwarnings('ignore', message='FP16 is not supported on CPU')
-
-base_model = whisper.load_model('base')
 device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 print(f'Using device: {device}', flush=True)
+
+base_model = whisper.load_model('base')
+turbo_model = whisper.load_model('turbo')
 
 hindi_transcribe = pipeline(task='automatic-speech-recognition', model='vasista22/whisper-hindi-small', chunk_length_s=30, device=device)
 hindi_transcribe.model.config.forced_decoder_ids = hindi_transcribe.tokenizer.get_decoder_prompt_ids(language='hi', task='transcribe')
@@ -42,6 +44,7 @@ kinyarwanda_transcribe = pipeline("automatic-speech-recognition", model="mbazaNL
 
 
 def transcribe(audio_path, language):
+    return turbo_model.transcribe(audio_path, language=language.lower())['text']
     if language == 'Hindi':
         return hindi_transcribe(audio_path)['text']
     elif language == 'Telugu':
@@ -65,13 +68,14 @@ if __name__ == '__main__':
     audio_folder = '/nlp/data/jsq/audio'
     # mturk_folder = '/Users/Justin Qiu/Desktop/senior_thesis/image-captioning-mturk/mturk_output/'
     mturk_folder = '/nlp/data/jsq/mturk_output/'
-    output_csv = '/home1/j/jsq/dev/image-captioning-mturk/processed_output/output_transcription_cvqa.csv'
+    previous_csv = '/home1/j/jsq/dev/image-captioning-mturk/processed_output/output_transcription_cvqa_whisper_only_language_specified.csv'
+    output_csv = '/home1/j/jsq/dev/image-captioning-mturk/processed_output/output_transcription_cvqa_whisper_only_language_specified.csv'
     # batch_csv_paths = glob.glob(f'{mturk_folder}/*_batch_results.csv')
     batch_csv_paths = glob.glob(f'{mturk_folder}/*_batch_results.csv')
 
     metadata_df = pd.concat([pd.read_csv(csv_path) for csv_path in batch_csv_paths], ignore_index=True)
-    if os.path.exists(output_csv):
-        existing_df = pd.read_csv(output_csv)
+    if os.path.exists(previous_csv):
+        existing_df = pd.read_csv(previous_csv)
     else:
         existing_df = pd.DataFrame(columns=['id'])
 
@@ -100,12 +104,12 @@ if __name__ == '__main__':
             #     continue
 
             audio_path = os.path.join(audio_folder, audio_file)
-            transcription = existing_df[existing_df['id'] == vocaroo_id]['transcription'].values
-            # try:
-            #     transcription = transcribe(audio_path, language)
-            # except Exception as e:
-            #     print(f'Error in {vocaroo_id}: {e}')
-            #     continue
+            # transcription = existing_df[existing_df['id'] == vocaroo_id]['transcription'].values
+            try:
+                transcription = transcribe(audio_path, language)
+            except Exception as e:
+                print(f'Error in {vocaroo_id}: {e}')
+                continue
             data.append(
                 {
                     'id': vocaroo_id,
@@ -118,7 +122,7 @@ if __name__ == '__main__':
                     'selected_other_languages': selected_other_languages
                 }
             )
-            print(f'Finished {vocaroo_id}', flush=True)
+            print(f'Finished {vocaroo_id}; transcription: {transcription}', flush=True)
 
     new_df = pd.DataFrame(data)
     combined_df = pd.concat([existing_df, new_df], ignore_index=True).drop_duplicates(subset=['id'], keep='last')

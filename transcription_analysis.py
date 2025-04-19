@@ -1,35 +1,37 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from langdetect import detect, lang_detect_exception
 
-def check_lang(val):
-    try:
-        lang = detect(str(val))
-    except lang_detect_exception.LangDetectException:
-        lang = 'UNKNOWN'
-    return lang
-
-
-pd.options.display.max_rows = 100
+pd.options.display.max_rows = 200
 pd.options.display.max_colwidth = 300
 pd.options.display.max_columns = 100
 
-df = pd.read_csv('/home1/j/jsq/dev/image-captioning-mturk/processed_output/output_transcription_cvqa.csv')
+df = pd.read_csv('/home1/j/jsq/dev/image-captioning-mturk/processed_output/output_transcription_cvqa_whisper_only_language_specified.csv')
 
-df = df[df['language'] == 'Hindi']
-print(df['transcription'])
-print(len(df))
+language_counts = df["language"].value_counts()
+print("Annotations per language:")
+print(language_counts)
+print(f"Total annotations: {len(df)}")
 
-# # given string, calculate percent of it that's alphabet
-# def percent_alpha(s):
-#     s = str(s)
-#     return sum([c.isalpha() for c in s]) / len(s)
+grouped = df.groupby("image_link")
+print(f"Number of unique images: {grouped.ngroups}")
 
-# # print the rows of the dataframe that have a transcription that is less than 50% alphabet
-# for index, row in df.iterrows():
-#     lang = check_lang(row['transcription'])
-#     if lang != 'en':
-#         print(lang)
-#         print(row['transcription'])
-#     elif percent_alpha(row['transcription']) < 0.6:
-#         print(row['transcription'])
+multi_lang_groups = grouped.filter(lambda group: group["language"].nunique() > 1)
+# print(f"Number of images with at least two language annotations: {multi_lang_groups['image_link'].nunique()}")
+# print(f"Number of annotations in images with at least two language annotations: {len(multi_lang_groups)}")
+
+# three_lang_groups = grouped.filter(lambda group: group["language"].nunique() > 2)
+# print(f"Number of images with at least three language annotations: {three_lang_groups['image_link'].nunique()}")
+# print(f"Number of annotations in images with at least three language annotations: {len(three_lang_groups)}")
+
+# four_lang_groups = grouped.filter(lambda group: group["language"].nunique() > 3)
+# print(f"Number of images with at least four language annotations: {four_lang_groups['image_link'].nunique()}")
+# print(f"Number of annotations in images with at least four language annotations: {len(four_lang_groups)}")
+
+# sort by number of transcriptions that each image link got
+# counts = df.groupby("image_link").size().sort_values(ascending=False)
+# print(counts)
+
+stats_df = df.groupby("image_link").agg(
+    unique_languages    = ('language', 'nunique')
+).sort_values(by='unique_languages', ascending=False)
+print(stats_df.head(200))
