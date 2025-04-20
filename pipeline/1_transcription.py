@@ -11,6 +11,7 @@ import torch
 import whisper
 from transformers import pipeline
 
+<<<<<<< Updated upstream
 from huggingface_hub import login
 from keys import hf_token
 
@@ -24,12 +25,23 @@ print(f'Using device: {device}', flush=True)
 
 base_model = whisper.load_model('base')
 turbo_model = whisper.load_model('turbo')
+=======
+# warnings.filterwarnings('ignore', message='FP16 is not supported on CPU')
 
-hindi_transcribe = pipeline(task='automatic-speech-recognition', model='vasista22/whisper-hindi-small', chunk_length_s=30, device=device)
-hindi_transcribe.model.config.forced_decoder_ids = hindi_transcribe.tokenizer.get_decoder_prompt_ids(language='hi', task='transcribe')
+# base_model = whisper.load_model('base')
+# device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+>>>>>>> Stashed changes
 
+# hindi_transcribe = pipeline(task='automatic-speech-recognition', model='vasista22/whisper-hindi-small', chunk_length_s=30, device=device)
+# hindi_transcribe.model.config.forced_decoder_ids = hindi_transcribe.tokenizer.get_decoder_prompt_ids(language='hi', task='transcribe')
+
+<<<<<<< Updated upstream
 telugu_transcribe = pipeline(task='automatic-speech-recognition', model='vasista22/whisper-telugu-small', chunk_length_s=30, device=device)
 telugu_transcribe.model.config.forced_decoder_ids = telugu_transcribe.tokenizer.get_decoder_prompt_ids(language='te', task='transcribe')
+=======
+# telugu_transcribe = pipeline(task='automatic-speech-recognition', model='vasista22/whisper-telugu-base', chunk_length_s=30, device=device)
+# telugu_transcribe.model.config.forced_decoder_ids = telugu_transcribe.tokenizer.get_decoder_prompt_ids(language='te', task='transcribe')
+>>>>>>> Stashed changes
 
 tamil_transcribe = pipeline(task="automatic-speech-recognition", model="vasista22/whisper-tamil-small", chunk_length_s=30, device=device)
 tamil_transcribe.model.config.forced_decoder_ids = tamil_transcribe.tokenizer.get_decoder_prompt_ids(language="ta", task="transcribe")
@@ -43,34 +55,20 @@ nepali_transcribe = pipeline("automatic-speech-recognition", model="DrishtiSharm
 kinyarwanda_transcribe = pipeline("automatic-speech-recognition", model="mbazaNLP/Whisper-Small-Kinyarwanda", device=device)
 
 
-def transcribe(audio_path, language):
-    return turbo_model.transcribe(audio_path, language=language.lower())['text']
-    if language == 'Hindi':
-        return hindi_transcribe(audio_path)['text']
-    elif language == 'Telugu':
-        return telugu_transcribe(audio_path)['text']
-    elif language == 'Tamil':
-        return tamil_transcribe(audio_path)['text']
-    elif language == 'Viet':
-        return viet_transcribe(audio_path)['text']
-    elif language == 'Bengali':
-        return bengali_transcribe(audio_path)['text']
-    elif language == 'Nepali':
-        return nepali_transcribe(audio_path)['text']
-    elif language == 'Kinyarwanda':
-        return kinyarwanda_transcribe(audio_path)['text']
-    else:
-        return base_model.transcribe(audio_path)['text']
+# def transcribe(audio_path, language):
+#     if language == 'Hindi':
+#         return hindi_transcribe(audio_path)['text']
+#     elif language == 'Telugu':
+#         return telugu_transcribe(audio_path)['text']
+#     else:
+#         return base_model.transcribe(audio_path)['text']
 
 
 if __name__ == '__main__':
-    # audio_folder = '/Users/Justin Qiu/Desktop/senior_thesis/image-captioning-mturk/audio'
-    audio_folder = '/nlp/data/jsq/audio'
-    # mturk_folder = '/Users/Justin Qiu/Desktop/senior_thesis/image-captioning-mturk/mturk_output/'
-    mturk_folder = '/nlp/data/jsq/mturk_output/'
-    previous_csv = '/home1/j/jsq/dev/image-captioning-mturk/processed_output/output_transcription_cvqa_whisper_only_language_specified.csv'
-    output_csv = '/home1/j/jsq/dev/image-captioning-mturk/processed_output/output_transcription_cvqa_whisper_only_language_specified.csv'
-    # batch_csv_paths = glob.glob(f'{mturk_folder}/*_batch_results.csv')
+    audio_folder = '/Users/Justin Qiu/Desktop/senior_thesis/image-captioning-mturk/audio'
+    mturk_folder = '/Users/Justin Qiu/Desktop/senior_thesis/image-captioning-mturk/mturk_output/'
+    previous_csv = 'processed_output/output_transcription_2.csv'
+    output_csv = 'processed_output/output_transcription_cvqa_empty.csv'
     batch_csv_paths = glob.glob(f'{mturk_folder}/*_batch_results.csv')
 
     metadata_df = pd.concat([pd.read_csv(csv_path) for csv_path in batch_csv_paths], ignore_index=True)
@@ -96,6 +94,7 @@ if __name__ == '__main__':
                 selected_other_languages = True
                 language = metadata_row['Answer.preferred_language'].values[0].capitalize()
 
+<<<<<<< Updated upstream
             # if vocaroo_id not in existing_df['id'].values:
             #     pass
             #     # print(f'Processing {vocaroo_id}', flush=True)
@@ -110,6 +109,22 @@ if __name__ == '__main__':
             except Exception as e:
                 print(f'Error in {vocaroo_id}: {e}')
                 continue
+=======
+            # skip if already exists or language is not Hindi or Telugu
+            if vocaroo_id not in existing_df['id'].values:
+                # print(f'MISSING {vocaroo_id}')
+                pass
+            else:
+                # print(f'SKIPPING {vocaroo_id}')
+                pass
+                continue
+            # if not (language == 'Hindi' or language == 'Telugu'):
+            #     continue
+
+            audio_path = os.path.join(audio_folder, audio_file)
+            # transcription = transcribe(audio_path, language)
+            transcription = ''
+>>>>>>> Stashed changes
             data.append(
                 {
                     'id': vocaroo_id,
