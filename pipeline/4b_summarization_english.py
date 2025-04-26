@@ -39,7 +39,7 @@ with open(output_file, mode='a', newline='', encoding='utf-8') as f:
             messages = [
                 {
                     'role': 'system',
-                    'content': "Summarize and enhance the quality of raw captions into high-quality transcripts. Provide clear, descriptive, and professional outputs."
+                    'content': "Summarize and enhance the quality of raw captions into high-quality transcripts. Provide clear, descriptive, and professional outputs. Do not include any other text or formatting besides the summary itself. For example, do not include 'Summary:' or 'The transcription describes' or any other meta text."
                 },
                 {
                     'role': 'user',
@@ -66,7 +66,7 @@ with open(output_file, mode='a', newline='', encoding='utf-8') as f:
             messages = [
                 {
                     'role': 'system',
-                    'content': "Enhance the quality of raw captions into high-quality transcripts. Provide clear, descriptive, and professional outputs."
+                    'content': "Enhance the quality of raw captions into high-quality transcripts. Provide clear, descriptive, and professional outputs. Do not include any other text or formatting besides the summary itself. For example, do not include 'Summary:' or 'The transcription describes' or any other meta text."
                 },
                 {
                     'role': 'user',

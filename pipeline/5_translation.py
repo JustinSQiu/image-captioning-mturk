@@ -4,8 +4,8 @@ import pandas as pd
 from helpers import get_gpt_response
 
 # Define file paths
-input_file = 'processed_output/output_transcription_cvqa_whisper_only_language_specified.csv'
-output_file = 'processed_output/output_translated.csv'
+input_file = 'processed_output/output_transcription_cleaned.csv'
+output_file = 'processed_output/output_translated_cleaned.csv'
 
 # Load the input CSV, preserving the original structure
 df_in = pd.read_csv(input_file)
@@ -52,8 +52,9 @@ with open(output_file, mode='a', newline='', encoding='utf-8') as f:
                     'role': 'system',
                     'content': (
                         "Translate the following transcription into English. "
-                        "Preserve the original meaning, tone, and details. "
-                        "Ensure that your output is entirely in English."
+                        "Preserve the original meaning, tone, and specific details. "
+                        "Ensure that your output is entirely in English. "
+                        "Do not include any other text or formatting besides the translation itself. For example, do not include 'Translation:' or 'The transcription describes' or any other meta text. "
                     )
                 },
                 {

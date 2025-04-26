@@ -8,9 +8,9 @@ def check_lang(val):
         lang = 'UNKNOWN'
     return lang
 
-input_file = 'processed_output/output_transcription_full_2.csv'
-output_file = 'processed_output/output_transcription_errors_2.csv'
-cleaned_file = 'processed_output/output_transcription_cleaned_2.csv'
+input_file = 'processed_output/output_transcription_cvqa_whisper_with_finetunes.csv'
+output_file = 'processed_output/output_transcription_errors.csv'
+cleaned_file = 'processed_output/output_transcription_cleaned.csv'
 
 df = pd.read_csv(input_file)
 error_rows = []
@@ -30,7 +30,7 @@ for index, row in df.iterrows():
                 'image_link': row['image_link'], 
                 'transcription': transcription, 
                 'response': 'Length', 
-                'workerid': row['WorkerId']
+                # 'workerid': row['WorkerId']
             })
             invalid_ids.add(row['id'])
         elif lang != 'en':
@@ -43,7 +43,7 @@ for index, row in df.iterrows():
                 'image_link': row['image_link'], 
                 'transcription': transcription, 
                 'response': 'Language', 
-                'workerid': row['WorkerId']
+                # 'workerid': row['WorkerId']
             })
             invalid_ids.add(row['id'])
 
@@ -58,7 +58,7 @@ for index, row in df.iterrows():
                 'image_link': row['image_link'], 
                 'transcription': transcription, 
                 'response': 'Length', 
-                'workerid': row['WorkerId']
+                # 'workerid': row['WorkerId']
             })
             invalid_ids.add(row['id'])
         elif not lang.startswith('zh') and lang != 'ko':
@@ -71,7 +71,7 @@ for index, row in df.iterrows():
                 'image_link': row['image_link'], 
                 'transcription': transcription, 
                 'response': 'Language', 
-                'workerid': row['WorkerId']
+                # 'workerid': row['WorkerId']
             })
             invalid_ids.add(row['id'])
 
@@ -85,7 +85,21 @@ for index, row in df.iterrows():
             'image_link': row['image_link'], 
             'transcription': transcription, 
             'response': 'Length', 
-            'workerid': row['WorkerId']
+            # 'workerid': row['WorkerId']
+        })
+        invalid_ids.add(row['id'])
+
+    elif row['language'] in ['Nepali', 'Amharic', 'Kinyarwanda']:
+        error_rows.append({
+            'id': row['id'], 
+            'language': row['language'], 
+            'culturally_distinct': row['culturally_distinct'], 
+            'cultural_distinction_explanation': row['cultural_distinction_explanation'], 
+            'vocaroo_link': row['vocaroo_link'], 
+            'image_link': row['image_link'], 
+            'transcription': transcription, 
+            'response': 'Transcription Unsupported', 
+            # 'workerid': row['WorkerId']
         })
         invalid_ids.add(row['id'])
 
