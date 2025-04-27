@@ -5,15 +5,12 @@ import json
 import pandas as pd
 from helpers import get_gpt_response
 
-INPUT_FILE  = 'processed_output/output_translated.csv'
+INPUT_FILE  = 'processed_output/output_summarized_by_type.csv'
 OUTPUT_FILE = 'processed_output/output_facts_and_questions.csv'
 
-# 1) load and group
 df = pd.read_csv(INPUT_FILE)
-df.dropna(subset=['transcription'], inplace=True)
 groups = df.groupby('image_link')
 
-# 2) resume progress
 if os.path.exists(OUTPUT_FILE) and os.stat(OUTPUT_FILE).st_size > 0:
     done = set(pd.read_csv(OUTPUT_FILE)['image_link'])
 else:
@@ -22,98 +19,91 @@ else:
 with open(OUTPUT_FILE, 'a', newline='', encoding='utf-8') as fout:
     writer = csv.writer(fout)
     if os.stat(OUTPUT_FILE).st_size == 0:
-        writer.writerow([
-            'image_link',
-            'native_transcription',
-            'non_native_transcription',
-            'facts_missing_in_non_native',
-            'questions_per_fact'
-        ])
+        writer.writerow(['image_link', 'question', 'answer'])
 
     for image_link, group in groups:
         if image_link in done:
             continue
 
-        # infer source language from the URL path
-        m = re.search(r'/([^/]+)_images/', image_link)
+        m = re.search(r'.*/([^/]+)_images/', image_link)
         source_lang = m.group(1) if m else ''
 
-        native_rows     = group[group['language'].str.lower() == source_lang.lower()]
-        non_native_rows = group[group['language'].str.lower() != source_lang.lower()]
-
-        if native_rows.empty or non_native_rows.empty:
-            print(f"Skip {image_link}: need both native & non-native")
+        native_row     = group[group['annotation_type'] == 'native']
+        non_native_row = group[group['annotation_type'] == 'nonnative']
+        if native_row.empty or non_native_row.empty:
             continue
 
-        native_text     = native_rows.iloc[0]['translation']
-        non_native_text = non_native_rows.iloc[0]['translation']
+        native_text     = native_row['summary'].iloc[0]
+        non_native_text = non_native_row['summary'].iloc[0]
 
-        # --- STEP 1: Extract missing facts ---
+        # 1: Generate cultural facts
         fact_prompt = [
-            {
-                'role': 'system',
-                'content': (
-                    "You have two English descriptions of the same image:\n"
-                    "- NATIVE (detailed, from someone whose language matches the image source)\n"
-                    "- NON-NATIVE (a translation)\n\n"
-                    "List ONLY the individual factual statements that appear in NATIVE but are MISSING from NON-NATIVE.\n"
-                    "Each fact must be as specific as possible (e.g. “the sari has gold embroidery”, not “distinct clothes”).\n"
-                    "Return a JSON list of strings under the key `facts_missing_in_non_native`."
-                )
-            },
-            {
-                'role': 'user',
-                'content': json.dumps({
-                    'native_transcription':     native_text,
-                    'non_native_transcription': non_native_text
-                }, ensure_ascii=False)
-            }
+            {'role': 'system', 'content': (
+                "You have two English descriptions of the same image:\n"
+                "- NATIVE (detailed, cultural)\n"
+                "- NON-NATIVE (possibly lacking culture)\n\n"
+                "List the culturally distinct statements in NATIVE that are MISSING in NON-NATIVE."
+                " Return JSON: {'cultural_facts': [ ... ]}."
+            )},
+            {'role': 'user', 'content': json.dumps({
+                'native_transcription': native_text,
+                'non_native_transcription': non_native_text
+            }, ensure_ascii=False)}
         ]
-
         try:
-            fact_resp = get_gpt_response(fact_prompt).strip()
-            fact_data = json.loads(fact_resp)
-            facts = fact_data.get('facts_missing_in_non_native', [])
-        except Exception as e:
-            print(f"Error extracting facts for {image_link}: {e}")
+            raw = get_gpt_response(fact_prompt).strip()
+            raw = re.sub(r"^```(\w+)?|```$", "", raw).strip()
+            facts = json.loads(raw).get('cultural_facts', [])
+        except Exception:
             continue
 
-        # --- STEP 2: For each fact, generate one question ---
-        # we pass back the native transcription again for context
-        questions_prompt = [
-            {
-                'role': 'system',
-                'content': (
-                    "Given an English DESCRIPTION of an image and a list of SPECIFIC facts, "
-                    "write exactly one question per fact such that the question can be answered "
-                    "only if you know that fact from the description.\n\n"
-                    "Return a JSON object mapping each fact to its question, under the key `questions_per_fact`."
-                )
-            },
-            {
-                'role': 'user',
-                'content': json.dumps({
-                    'native_transcription': native_text,
-                    'facts': facts
-                }, ensure_ascii=False)
-            }
+        # 2: Generate question-answer pairs
+        qa_prompt = [
+            {'role': 'system', 'content': (
+                "Given an English description of an image and a list of specific facts,"
+                " write one concise question-answer pair per fact for a VQA dataset. Remember that the dataset is intended for visual question answering, and there will be an image associated with each question. However, since you don't have the image, you should only use the text to generate the question and answer; just keep in mind that the question is being framed with the image."
+                " Questions should be clear (e.g. 'What does the structure resemble?')"
+                " and answers brief and clear (e.g. 'a minaret', 'holi')."
+                " Return JSON: {'qa_pairs': [{ 'fact': ..., 'question': ..., 'answer': ... }, ...]}."
+            )},
+            {'role': 'user', 'content': json.dumps({
+                'native_transcription': native_text,
+                'facts': facts
+            }, ensure_ascii=False)}
         ]
-
         try:
-            q_resp = get_gpt_response(questions_prompt).strip()
-            q_data = json.loads(q_resp)
-            questions_per_fact = q_data.get('questions_per_fact', {})
-        except Exception as e:
-            print(f"Error generating questions for {image_link}: {e}")
+            qa_raw = get_gpt_response(qa_prompt).strip()
+            qa_raw = re.sub(r"^```(\w+)?|```$", "", qa_raw).strip()
+            qa_data = json.loads(qa_raw)
+            qa_pairs = qa_data.get('qa_pairs', [])
+        except Exception:
             continue
 
-        # 3) write out
-        writer.writerow([
-            image_link,
-            native_text,
-            non_native_text,
-            json.dumps(facts, ensure_ascii=False),
-            json.dumps(questions_per_fact, ensure_ascii=False),
-        ])
+        # 3: Filter out culturally distinct facts
+        filter_prompt = [
+            {'role': 'system', 'content': (
+                "Given the native transcription of the image and a list of question-answer pairs with their facts,"
+                " remove any pair whose question is not culturally distinct or cannot be answered from the native transcription. You can be very selective."
+                " Return JSON list of facts to KEEP under 'filtered_facts'."
+            )},
+            {'role': 'user', 'content': json.dumps({
+                'native_transcription': native_text,
+                'qa_pairs': qa_pairs
+            }, ensure_ascii=False)}
+        ]
+        try:
+            f_raw = get_gpt_response(filter_prompt).strip()
+            f_raw = re.sub(r"^```(\w+)?|```$", "", f_raw).strip()
+            f_data = json.loads(f_raw)
+            keep = set(f_data.get('filtered_facts', []))
+        except Exception:
+            keep = set([pair['fact'] for pair in qa_pairs])
+
+        for pair in qa_pairs:
+            fact = pair.get('fact')
+            if fact not in keep:
+                continue
+            question = pair.get('question')
+            answer = pair.get('answer')
+            writer.writerow([image_link, question, answer])
         fout.flush()
-        print(f"Done {image_link}")
