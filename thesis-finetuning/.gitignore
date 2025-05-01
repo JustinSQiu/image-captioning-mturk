@@ -1,0 +1,4 @@
+models
+slurm_output
+wandb
+__pycache__/
