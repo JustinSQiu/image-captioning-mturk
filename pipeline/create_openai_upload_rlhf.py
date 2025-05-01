@@ -25,27 +25,27 @@ def main(split="train"):
             record = {
                 "input": {
                     "messages": [
-                        {
-                            "role": "system",
-                            "content": (
-                                "You are an assistant that creates detailed captions of images, "
-                                "with a strong focus on cultural elements but also an emphasis on all details."
-                            )
-                        },
+                        # {
+                        #     "role": "system",
+                        #     "content": (
+                        #         "You are an assistant that creates detailed captions of images, "
+                        #         "with a strong focus on cultural elements but also an emphasis on all details."
+                        #     )
+                        # },
                         {
                             "role": "user",
                             "content": "Provide a detailed caption of this image."
                         },
-                        {
-                            "role": "user",
-                            "content": {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": url,
-                                    "detail": "auto"
-                                }
-                            }
-                        }
+                        # {
+                        #     "role": "user",
+                        #     "content": {
+                        #         "type": "image_url",
+                        #         "image_url": {
+                        #             "url": url,
+                        #             "detail": "auto"
+                        #         }
+                        #     }
+                        # }
                     ],
                     "tools": [],
                     "parallel_tool_calls": True
