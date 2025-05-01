@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import json
 from collections import defaultdict
 from datasets import load_dataset
@@ -13,7 +12,6 @@ def main(split="train"):
         groups[ex["image_link"]].append(ex)
 
     with open(f"processed_output/openai_rlhf_{split}.jsonl", "w", encoding="utf-8") as fout:
-        # 4) for each image, if we have both native & nonnative...
         for url, examples in groups.items():
             native   = [e for e in examples if e["annotation_type"] == "native"]
             nonnative = [e for e in examples if e["annotation_type"] == "nonnative"]
