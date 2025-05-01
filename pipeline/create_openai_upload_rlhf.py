@@ -6,7 +6,7 @@ from datasets import load_dataset
 def main(split="train"):
     ds = load_dataset(
         "justinsunqiu/multilingual_transcriptions_summarized_by_native_nonnative",
-        split="train"
+        split=split
     )
     groups = defaultdict(list)
     for ex in ds:
