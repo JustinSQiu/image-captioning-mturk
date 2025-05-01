@@ -1,19 +1,22 @@
 import os
+from datasets import Dataset
+import pandas as pd
+from huggingface_hub import login
 
 os.environ["HF_HOME"] = "/nlp/data/huggingface_cache"
-
-import pandas as pd
-from datasets import Dataset
-from huggingface_hub import HfApi, login
 from keys import hf_token
-
 login(hf_token)
 
-# api = HfApi()
-# api.create_repo(repo_id="justinsunqiu/multilingual_captions", repo_type="dataset")
-
-df = pd.read_csv('processed_output/output_translated_cleaned.csv')
+df = pd.read_csv('processed_output/output_translated_summarized.csv')
 df = df[df['image_link'] != 'https://raw.githubusercontent.com/JustinSQiu/image-captioning-mturk/master/mmid_images/Chinese_images/.DS_Store']
-dataset = Dataset.from_pandas(df)
 
-dataset.push_to_hub("justinsunqiu/multilingual_transcriptions_cleaned", private=False)
+full_ds = Dataset.from_pandas(df)
+split_ds = full_ds.train_test_split(test_size=0.1, seed=42)  # 10% validation
+
+train_ds = split_ds['train']
+val_ds = split_ds['test']
+
+repo_id = "justinsunqiu/multilingual_transcriptions_summarized"
+
+train_ds.push_to_hub(repo_id, split="train", private=False)
+val_ds.push_to_hub(repo_id, split="test", private=False)
