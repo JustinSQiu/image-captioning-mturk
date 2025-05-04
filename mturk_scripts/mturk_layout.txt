@@ -1,0 +1,61 @@
+<script src="https://assets.crowd.aws/crowd-html-elements.js"></script>
+
+<crowd-form answer-format="flatten-objects">
+  <p>
+    <strong>Instructions: </strong> Describe the image shown below by recording your voice on Vocaroo. Please follow these steps:
+  </p>
+  <ol>
+    <li>Go to <a href="https://vocaroo.com" target="_blank">Vocaroo</a>. Click the red record button to start recording.</li>
+    <li>Please describe the image in detail. Feel free to use the below questions to guide your answer.</li>
+    <li>Please speak for around 90 seconds (at least 60 seconds). Please speak in the language of your choice (if your language is included in the batches, please select that batch and not this one!).</li>
+    <li>When you're done, click "Save & Share" and copy the generated link.</li>
+    <li>Paste the Vocaroo link into the text box provided below.</li>
+    <li>Please make sure that the link works correctly by clicking it and ensuring that your recording was properly saved.</li>
+  </ol>
+  
+  <p><img src="${image_url}" style="max-width: 100%; max-height: 250px" /></p>
+  
+  <p><strong>Questions to Answer:</strong></p>
+  <ol>
+    <li>What is the image at first glance?</li>
+    <li>What are the objects and their counts?</li>
+    <li>If there is text, what does it say?</li>
+    <li>What are the positions of the objects?</li>
+    <li>What subtle details are noticeable?</li>
+    <li>What is in the background?</li>
+    <li>What is the style and color?</li>
+    <li>Is there any contextual information such as location that might help to understand the image?</li>
+    <li>Is there anything that can be inferred from the image?</li>
+  </ol>
+  
+  <crowd-input 
+    label="Paste the Vocaroo recording link here:" 
+    name="vocaroo_link" 
+    placeholder="https://vocaroo.com/..." 
+    required>
+  </crowd-input>
+  
+<p><strong>Where are you from? Which culture do you identify with?</strong></p>
+You only need to answer this question the first time you do an annotation! We will match your response with your later annotations.
+  <crowd-input 
+    label="Where are you from? Which culture do you identify with? If multiple, please list all of them."
+    name="participant_culture" 
+    placeholder="e.g., American, Colombian, Chinese, Korean, Nigerian, etc." 
+    required>
+  </crowd-input>
+
+  
+  <p><strong>Is this image culturally distinct?</strong></p>
+  <p><em>Definition:</em> An image is considered "culturally distinct" if its content, such as objects, settings, or styles, is significantly influenced by or unique to a particular culture or tradition, and may vary greatly between different cultures.</p>
+  
+  <label>
+    <input type="checkbox" name="culturally_distinct" value="yes">
+    This image is culturally distinct.
+  </label>
+  
+  <crowd-input 
+    label="If yes, please explain why you think this image is culturally distinct:" 
+    name="cultural_distinction_explanation" 
+    placeholder="Type your explanation here...">
+  </crowd-input>
+</crowd-form>

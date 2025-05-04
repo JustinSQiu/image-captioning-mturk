@@ -24,11 +24,11 @@ device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
 print(f'Using device: {device}', flush=True)
 
-# large_model = whisper.load_model('large-v3')
+large_model = whisper.load_model('large-v3')
 # turbo_model = whisper.load_model('turbo')
 
-tamil_transcribe = pipeline(task="automatic-speech-recognition", model="vasista22/whisper-tamil-large-v2", chunk_length_s=30, device=device)
-tamil_transcribe.model.config.forced_decoder_ids = tamil_transcribe.tokenizer.get_decoder_prompt_ids(language="ta", task="transcribe")
+# tamil_transcribe = pipeline(task="automatic-speech-recognition", model="vasista22/whisper-tamil-large-v2", chunk_length_s=30, device=device)
+# tamil_transcribe.model.config.forced_decoder_ids = tamil_transcribe.tokenizer.get_decoder_prompt_ids(language="ta", task="transcribe")
 
 # viet_transcribe = pipeline("automatic-speech-recognition", model="vinai/PhoWhisper-large", device=device)
 
@@ -47,18 +47,19 @@ tamil_transcribe.model.config.forced_decoder_ids = tamil_transcribe.tokenizer.ge
 
 print(f'Transcribing audio...', flush=True)
 
-audio_file = '/nlp/data/jsq/audio/1nxreKKxOBq4.mp3' # Tamil
+audio_file = '/nlp/data/jsq/audio/1ntxnO2Z8CST.mp3' # English
+# audio_file = '/nlp/data/jsq/audio/1nxreKKxOBq4.mp3' # Tamil
 # audio_file = '/nlp/data/jsq/audio/14XUZFw5gvwB.mp3' # Viet
 # audio_file = '/nlp/data/jsq/audio/1aaE9dN6bCXs.mp3' # Nepali
 # audio_file = '/nlp/data/jsq/audio/16S3XoWRmuqT.mp3' # Bengali
-# audio_file = '/nlp/data/jsq/audio/1mF5BP74i19R.mp3' # Telugu
+# audio_file = '/nlp/data/jsq/audio/1hmrrRQSXlYc.mp3' # Telugu
 # audio_file = '/nlp/data/jsq/audio/1fx1T2oLhZEe.mp3' # Amharic
 # audio_file = '/nlp/data/jsq/audio/1dObTLHcjref.mp3' # Thai
 # audio_file = '/nlp/data/jsq/audio/11JbdrbaOPzP.mp3' # Kinyarwanda
 
-transcription = tamil_transcribe(audio_file)['text']
+# transcription = bengali_transcribe(audio_file)['text']
 
-# transcription = turbo_model.transcribe(audio_file, language='nepali')['text']
+transcription = large_model.transcribe(audio_file, language='english')['text']
 
 
 print(transcription)

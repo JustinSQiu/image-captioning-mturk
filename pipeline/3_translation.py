@@ -4,8 +4,8 @@ import pandas as pd
 from helpers import get_gpt_response
 
 # Define file paths
-input_file = 'processed_output/output_transcription_cleaned.csv'
-output_file = 'processed_output/output_translated_cleaned.csv'
+input_file = 'processed_output/output_transcription_filtered_final.csv'
+output_file = 'processed_output/output_transcription_translated_final.csv'
 
 # Load the input CSV, preserving the original structure
 df_in = pd.read_csv(input_file)

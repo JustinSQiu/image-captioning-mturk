@@ -1,19 +1,11 @@
 #!/bin/bash
-#SBATCH --job-name=finetune_qwen
-#SBATCH --output=finetune/slurm_output/output.txt
+#SBATCH --job-name=cvqa_eval
+#SBATCH --output=evaluation/slurm_output/output.txt
 #SBATCH --partition=p_nlp
 #SBATCH --gpus=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=256GB
 #SBATCH --constraint=48GBgpu
-
-# Usage: sbatch finetune_qwen.sh <model_name> <dataset>
-if [ "$#" -lt 1 ]; then
-  echo "Usage: $0 <output_dir>"
-  exit 1
-fi
-
-OUTPUT_DIR="$1"
 
 source /nlp/data/jsq/thesis/bin/activate
 module load cuda/11.7
@@ -29,5 +21,4 @@ wandb login --relogin 3449e394fda9eacb21f123572143a9c0c6dd3069
 
 export HF_HOME=/nlp/data/huggingface_cache
 
-python -m finetune.finetune \
-  --output_dir "${OUTPUT_DIR}"
+python -m evaluation.cvqa_eval

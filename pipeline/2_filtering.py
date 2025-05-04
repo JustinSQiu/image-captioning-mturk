@@ -8,9 +8,9 @@ def check_lang(val):
         lang = 'UNKNOWN'
     return lang
 
-input_file = 'processed_output/output_transcription_cvqa_whisper_with_finetunes.csv'
+input_file = 'processed_output/output_transcription_cvqa_large_whisper_with_finetunes_final.csv'
 output_file = 'processed_output/output_transcription_errors.csv'
-cleaned_file = 'processed_output/output_transcription_cleaned.csv'
+cleaned_file = 'processed_output/output_transcription_filtered_final.csv'
 
 df = pd.read_csv(input_file)
 error_rows = []

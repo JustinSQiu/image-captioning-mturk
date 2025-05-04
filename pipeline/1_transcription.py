@@ -22,7 +22,7 @@ warnings.filterwarnings('ignore', message='FP16 is not supported on CPU')
 device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 print(f'Using device: {device}', flush=True)
 
-# base_model = whisper.load_model('base')
+large_model = whisper.load_model('large-v3')
 # turbo_model = whisper.load_model('turbo')
 
 # hindi_transcribe = pipeline(task='automatic-speech-recognition', model='vasista22/whisper-hindi-small', chunk_length_s=30, device=device)
@@ -34,19 +34,19 @@ print(f'Using device: {device}', flush=True)
 tamil_transcribe = pipeline(task="automatic-speech-recognition", model="vasista22/whisper-tamil-small", chunk_length_s=30, device=device)
 tamil_transcribe.model.config.forced_decoder_ids = tamil_transcribe.tokenizer.get_decoder_prompt_ids(language="ta", task="transcribe")
 
-# viet_transcribe = pipeline("automatic-speech-recognition", model="vinai/PhoWhisper-large", device=device)
+viet_transcribe = pipeline("automatic-speech-recognition", model="vinai/PhoWhisper-large", device=device)
 
 # nepali_transcribe = pipeline("automatic-speech-recognition", model="kiranpantha/whisper-large-v3-nepali", device=device) # doesn't work
 
-# bengali_transcribe = pipeline("automatic-speech-recognition", model="KhushiDS/whisper-large-v3-Bengali", device=device)
+bengali_transcribe = pipeline("automatic-speech-recognition", model="vasista22/whisper-telugu-large-v2", device=device)
 
-# telugu_transcribe = pipeline("automatic-speech-recognition", model="KhushiDS/whisper-large-v3-Telugu", device=device)
+telugu_transcribe = pipeline("automatic-speech-recognition", model="KhushiDS/whisper-large-v3-Telugu", device=device)
 
 # amharic_transcribe = pipeline("automatic-speech-recognition", model="drmeeseeks/whisper-large-v2-amet", device=device) # doesn't work
 
-# thai_transcribe = thai_transcribe = pipeline("automatic-speech-recognition", model="biodatlab/whisper-th-large-combined", device=device)
+thai_transcribe = thai_transcribe = pipeline("automatic-speech-recognition", model="biodatlab/whisper-th-large-combined", device=device)
 
-# kinyarwanda_transcribe = pipeline("automatic-speech-recognition", model="mbazaNLP/Whisper-Small-Kinyarwanda", device=device)
+kinyarwanda_transcribe = pipeline("automatic-speech-recognition", model="mbazaNLP/Whisper-Small-Kinyarwanda", device=device)
 
 
 def transcribe(audio_path, language):
@@ -66,13 +66,13 @@ def transcribe(audio_path, language):
     if language == 'Bengali':
         return bengali_transcribe(audio_path, return_timestamps=True)['text']
     if language == 'Telugu':
-        return telugu_transcribe(audio_path, return_timestamps=True)['text']
+        return telugu_transcribe(audio_path)['text']
     if language == 'Thai':
         return thai_transcribe(audio_path, return_timestamps=True)['text']
     # if language == 'Kinyarwanda':
     #     return kinyarwanda_transcribe(audio_path)['text']
-    return turbo_model.transcribe(audio_path, language=language.lower())['text']
-    # return base_model.transcribe(audio_path)['text']
+    # return turbo_model.transcribe(audio_path, language=language.lower())['text']
+    return large_model.transcribe(audio_path, language=language.lower())['text']
 
 
 if __name__ == '__main__':
@@ -80,8 +80,8 @@ if __name__ == '__main__':
     audio_folder = '/nlp/data/jsq/audio'
     # mturk_folder = '/Users/Justin Qiu/Desktop/senior_thesis/image-captioning-mturk/mturk_output/'
     mturk_folder = '/nlp/data/jsq/mturk_output/'
-    previous_csv = '/home1/j/jsq/dev/image-captioning-mturk/processed_output/output_transcription_cvqa_whisper_with_finetunes.csv'
-    output_csv = '/home1/j/jsq/dev/image-captioning-mturk/processed_output/output_transcription_cvqa_whisper_with_finetunes.csv'
+    previous_csv = '/home1/j/jsq/dev/image-captioning-mturk/processed_output/output_transcription_cvqa_large_whisper_with_finetunes_final.csv'
+    output_csv = '/home1/j/jsq/dev/image-captioning-mturk/processed_output/output_transcription_cvqa_large_whisper_with_finetunes_final.csv'
     # batch_csv_paths = glob.glob(f'{mturk_folder}/*_batch_results.csv')
     batch_csv_paths = glob.glob(f'{mturk_folder}/*_batch_results.csv')
 
@@ -112,16 +112,22 @@ if __name__ == '__main__':
             #     continue
 
             audio_path = os.path.join(audio_folder, audio_file)
-            if language != 'Tamil':
-                transcription = existing_df[existing_df['id'] == vocaroo_id]['transcription'].values
-                print(f'Found {vocaroo_id} in existing_df, language is {language}', flush=True)
-            else:
-                try:
-                    transcription = transcribe(audio_path, language)
-                    print(f'Finished {vocaroo_id}; transcription: {transcription}', flush=True)
-                except Exception as e:
-                    print(f'Error in {vocaroo_id}: {e}')
-                    continue
+            # if language != 'Tamil':
+            #     transcription = existing_df[existing_df['id'] == vocaroo_id]['transcription'].values
+            #     print(f'Found {vocaroo_id} in existing_df, language is {language}', flush=True)
+            # else:
+            #     try:
+            #         transcription = transcribe(audio_path, language)
+            #         print(f'Finished {vocaroo_id}; transcription: {transcription}', flush=True)
+            #     except Exception as e:
+            #         print(f'Error in {vocaroo_id}: {e}')
+            #         continue
+            try:
+                transcription = transcribe(audio_path, language)
+                print(f'Finished {vocaroo_id}; transcription: {transcription}', flush=True)
+            except Exception as e:
+                print(f'Error in {vocaroo_id}: {e}')
+                continue
             data.append(
                 {
                     'id': vocaroo_id,
