@@ -1,29 +1,25 @@
-"""
-Convert the Hugging Face dataset 'justinsunqiu/multilingual_transcriptions_summarized'
-into a JSONL file suitable for OpenAI fine-tuning.
-"""
 import json
 from datasets import load_dataset
 
 def main(split="train"):
-    ds = load_dataset("justinsunqiu/multilingual_transcriptions_summarized", split=split)
+    ds = load_dataset("justinsunqiu/multilingual_transcriptions_translated_english_final", split=split)
 
-    with open(f"processed_output/openai_finetune_{split}.jsonl", "w", encoding="utf-8") as out_f:
+    with open(f"processed_output/openai_finetune_{split}_final.jsonl", "w", encoding="utf-8") as out_f:
         for example in ds:
             image_url = example["image_link"]
             caption   = example["summary"]
 
             messages = [
-                {
-                    "role": "system",
-                    "content": (
-                        "You are an assistant that creates detailed captions of images, "
-                        "with a strong focus on cultural elements but also an emphasis on all details."
-                    )
-                },
+                # {
+                #     "role": "system",
+                #     "content": (
+                #         "You are an assistant that creates detailed captions of images, "
+                #         "with a strong focus on cultural elements but also an emphasis on all details."
+                #     )
+                # },
                 {
                     "role": "user",
-                    "content": "Provide a detailed caption of this image."
+                    "content": "Write a detailed caption for this image."
                 },
                 {
                     "role": "user",

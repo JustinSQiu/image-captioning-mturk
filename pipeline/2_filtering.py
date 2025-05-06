@@ -106,5 +106,7 @@ for index, row in df.iterrows():
 error_df = pd.DataFrame(error_rows)
 error_df.to_csv(output_file, index=False)
 
+print(f"Filtered {len(error_rows)} rows with errors.")
+
 cleaned_df = df[~df['id'].isin(invalid_ids)]
 cleaned_df.to_csv(cleaned_file, index=False)

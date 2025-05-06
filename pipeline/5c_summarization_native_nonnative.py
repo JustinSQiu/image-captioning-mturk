@@ -4,10 +4,8 @@ import pandas as pd
 from helpers import get_gpt_response
 import re
 
-# ——— CONFIG ———
-input_file  = 'processed_output/output_translated_cleaned.csv'
-output_file = 'processed_output/output_summarized_by_type.csv'
-# —————————
+input_file  = 'processed_output/output_transcription_translated_manually_cleaned_ready_for_summarization_final.csv'
+output_file = 'processed_output/output_summarized_by_type_final.csv'
 
 df = pd.read_csv(input_file)
 df.dropna(subset=['translation'], inplace=True)
@@ -64,7 +62,7 @@ with open(output_file, 'a', newline='', encoding='utf-8') as f:
                 messages = [
                     {
                         'role': 'system',
-                        'content': "Enhance the quality of the raw captions into a high-quality transcript. Provide clear, descriptive, and professional outputs. Please make sure to include every single detail from every transcription; do not be too concise. Avoid rewording things if it makes the output more vague. If there are any culturally distinct elements, please explain them in detail. Also, it's okay if the output is longer than the input. It is important that you do not include any other text or formatting besides the summary itself. For example, do not include 'Summary:', 'The transcription describes', 'The first transcription mentions' or any other meta text; it is critical that your only output is the caption with all of the details from the original caption(s)."
+                        'content': "Enhance the quality of the raw captions into a high-quality transcript. Provide clear, descriptive, and professional outputs. Please make sure to include every single detail from every transcription; do not be too concise. Avoid rewording things if it makes the output more vague. If there are any culturally distinct elements, please explain them in detail. Also, it's okay if the output is longer than the input. It is important that you do not include any other text or formatting besides the summary itself. For example, do not include 'Summary:', 'The transcription describes', 'The first transcription mentions' or any other meta text; it is critical that your only output is the caption with all of the details from the original caption(s).  Do not include any hallucinations or made-up information that isn't in one of the provided transcriptions."
                     },
                     # {
                     #     'role': 'user',
@@ -91,7 +89,7 @@ with open(output_file, 'a', newline='', encoding='utf-8') as f:
                 messages = [
                     {
                         'role': 'system',
-                        'content': "Enhance the quality of the raw caption into a high-quality transcript. Provide clear, descriptive, and professional outputs. Please make sure to include every single detail from the transcription; do not be too concise. Avoid rewording things if it makes the output more vague. If there are any culturally distinct elements, please explain them in detail. Also, it's okay if the output is longer than the input. It is important that you do not include any other text or formatting besides the summary itself. For example, do not include 'Summary:', 'The transcription describes', 'The first transcription mentions' or any other meta text; it is critical that your only output is the caption with all of the details from the original caption."
+                        'content': "Enhance the quality of the raw caption into a high-quality transcript. Provide clear, descriptive, and professional outputs. Please make sure to include every single detail from the transcription; do not be too concise. Avoid rewording things if it makes the output more vague. If there are any culturally distinct elements, please explain them in detail. Also, it's okay if the output is longer than the input. It is important that you do not include any other text or formatting besides the summary itself. For example, do not include 'Summary:', 'The transcription describes', 'The first transcription mentions' or any other meta text; it is critical that your only output is the caption with all of the details from the original caption. Do not include any hallucinations or made-up information that isn't in the provided transcription."
                     },
                     # {
                     #     'role': 'user',

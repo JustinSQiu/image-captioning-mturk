@@ -1,15 +1,15 @@
 #!/bin/bash
-#SBATCH --job-name=finetune_qwen
-#SBATCH --output=finetune/slurm_output/output.txt
+#SBATCH --job-name=finetune_qwen_multilingual
+#SBATCH --output=finetune/slurm_output/output_finetune_qwen_multilingual.txt
 #SBATCH --partition=p_nlp
 #SBATCH --gpus=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=256GB
 #SBATCH --constraint=48GBgpu
 
-# Usage: sbatch finetune_qwen.sh <model_name> <dataset>
-if [ "$#" -lt 1 ]; then
-  echo "Usage: $0 <output_dir>"
+# Usage: sbatch finetune_qwen.sh <output_dir> <model_name> <dataset>
+if [ "$#" -lt 3 ]; then
+  echo "Usage: $0 <output_dir> <model_name> <dataset>"
   exit 1
 fi
 
@@ -30,4 +30,6 @@ wandb login --relogin 3449e394fda9eacb21f123572143a9c0c6dd3069
 export HF_HOME=/nlp/data/huggingface_cache
 
 python -m finetune.finetune \
-  --output_dir "${OUTPUT_DIR}"
+  --output_dir "${OUTPUT_DIR}" \
+  --model "$2" \
+  --dataset "$3" \

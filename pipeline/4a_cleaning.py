@@ -5,7 +5,7 @@ from helpers import get_gpt_response
 
 # Define file paths
 input_file = 'processed_output/output_transcription_translated_final.csv'
-output_file = 'processed_output/output_translation_cleaned_final.csv'
+output_file = 'processed_output/output_translation_cleaned_english_final.csv'
 
 # Load the input CSV, preserving the original structure
 df_in = pd.read_csv(input_file)
@@ -52,7 +52,7 @@ with open(output_file, mode='a', newline='', encoding='utf-8') as f:
             },
             {
                 'role': 'assistant',
-                'content': f"Transcription: {transcription}"
+                'content': f"{transcription}"
             },
             {
                 'role': 'user',

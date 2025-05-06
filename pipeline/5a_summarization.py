@@ -5,41 +5,40 @@ import pandas as pd
 from helpers import get_gpt_response
 
 input_file = 'processed_output/output_transcription_translated_manually_cleaned_ready_for_summarization_final.csv'
-output_file = 'processed_output/output_summarized_by_image_english_final.csv'
+output_file = 'processed_output/output_summarized_by_language_and_image_final.csv'
 
 df = pd.read_csv(input_file)
 df.dropna(subset=['transcription'], inplace=True)
-grouped = df.groupby(['image_link'])
+grouped = df.groupby(['image_link', 'language'])
 
 if os.path.exists(output_file) and os.stat(output_file).st_size > 0:
     completed_df = pd.read_csv(output_file)
-    completed_keys = set(completed_df['image_link'])
+    completed_keys = set(
+        zip(completed_df['image_link'], completed_df['language'])
+    )
 else:
     completed_keys = set()
 
 with open(output_file, mode='a', newline='', encoding='utf-8') as f:
     writer = csv.writer(f)
     if os.stat(output_file).st_size == 0:
-        writer.writerow(['image_link', 'languages', 'ids', 'transcriptions', 'distinct', 'explanations', 'summary'])
+        writer.writerow(['image_link', 'language', 'ids', 'transcriptions', 'distinct', 'explanations', 'summary'])
 
-    for (image_link), group in grouped:
-        image_link = image_link[0]
-        
-        if image_link in completed_keys:
-            print(f"Skipped group: {image_link}")
+    for (image_link, language), group in grouped:
+        if (image_link, language) in completed_keys:
+            print(f"Skipped group: {image_link}, {language}")
             continue
 
         ids = group['id'].tolist()
-        transcriptions = group['translation'].tolist()
+        transcriptions = group['transcription'].tolist()
         distinct = group['culturally_distinct'].tolist()
         explanations = group['cultural_distinction_explanation'].tolist()
-        languages = group['language'].tolist()
 
         if len(transcriptions) > 1:
             messages = [
                 {
                     'role': 'system',
-                        'content': "Enhance the quality of the raw captions into a high-quality transcript. Provide clear, descriptive, and professional outputs. Please make sure to include every single detail from every transcription; do not be too concise. Avoid rewording things if it makes the output more vague. If there are any culturally distinct elements, please explain them in detail. Also, it's okay if the output is longer than the input. It is important that you do not include any other text or formatting besides the summary itself. For example, do not include 'Summary:', 'The transcription describes', 'The first transcription mentions' or any other meta text; it is critical that your only output is the caption with all of the details from the original caption(s). Do not include any hallucinations or made-up information that isn't in one of the provided transcriptions."
+                        'content': "Enhance the quality of the raw captions into a high-quality transcript while preserving the original language. Provide clear, descriptive, and professional outputs. Please make sure to include every single detail from every transcription; do not be too concise. Avoid rewording things if it makes the output more vague. If there are any culturally distinct elements, please explain them in detail. Also, it's okay if the output is longer than the input. It is important that you do not include any other text or formatting besides the summary itself. For example, do not include 'Summary:', 'The transcription describes', 'The first transcription mentions' or any other meta text; it is critical that your only output is the caption with all of the details from the original caption(s). Ensure that your output is the same as the language of the input. Do not include any hallucinations or made-up information that isn't in one of the provided transcriptions."
                 },
                 # {
                 #     'role': 'user',
@@ -47,7 +46,7 @@ with open(output_file, mode='a', newline='', encoding='utf-8') as f:
                 # },
                 # {
                 #     'role': 'assistant',
-                #     'content': """This photograph depicts a striking black bird, possibly a grackle or similar species, perched on a white cement wall with red stains. The bird's sleek, elongated body is adorned with iridescent feathers that shimmer with shades of blue, purple, and green, most prominently on its wings and back. Its piercing yellow eye and long, sharp beak lend it a fierce, almost aerodynamic appearance. The bird's dark, slender legs and short talons grip the edge of the cement structure, which resembles a divider or barrier, possibly in an outdoor setting like a park or building patio. The background is a blur of green and white hues, hinting at lush tropical plants and tall trees, setting a serene, natural scene. The bird is poised, looking towards the upper right-hand corner of the frame, with its long tail feathers trailing elegantly to the left."""
+                #     'content': """Output: This photograph depicts a striking black bird, possibly a grackle or similar species, perched on a white cement wall with red stains. The bird's sleek, elongated body is adorned with iridescent feathers that shimmer with shades of blue, purple, and green, most prominently on its wings and back. Its piercing yellow eye and long, sharp beak lend it a fierce, almost aerodynamic appearance. The bird's dark, slender legs and short talons grip the edge of the cement structure, which resembles a divider or barrier, possibly in an outdoor setting like a park or building patio. The background is a blur of green and white hues, hinting at lush tropical plants and tall trees, setting a serene, natural scene. The bird is poised, looking towards the upper right-hand corner of the frame, with its long tail feathers trailing elegantly to the left."""
                 # },
                 # {
                 #     'role': 'user',
@@ -55,18 +54,18 @@ with open(output_file, mode='a', newline='', encoding='utf-8') as f:
                 # },
                 # {
                 #     'role': 'assistant',
-                #     'content': """The image features a logo on a predominantly black background. The background isn't a solid black but has subtle streaks of gray interspersed throughout. Centered in this black expanse is a white logo that bears a striking resemblance to the PlayStation logo, with a stylized 'P' standing upright and an 'S' laying flat beneath it. This 'PS' logo is slightly angled, as if the 'P' is rotated clockwise by around 45 degrees. To the right of this logo is a registered trademark symbol '®'. Beneath the logo, the phrase "VIDEO GAME COVER ART" is displayed in all capital letters, written in a bold, straightforward font, possibly Helvetica. All the text elements are centered within the image, suggesting that this might be a preliminary design file intended for a designer working on a project related to video game cover art."""
+                #     'content': """Output: The image features a logo on a predominantly black background. The background isn't a solid black but has subtle streaks of gray interspersed throughout. Centered in this black expanse is a white logo that bears a striking resemblance to the PlayStation logo, with a stylized 'P' standing upright and an 'S' laying flat beneath it. This 'PS' logo is slightly angled, as if the 'P' is rotated clockwise by around 45 degrees. To the right of this logo is a registered trademark symbol '®'. Beneath the logo, the phrase "VIDEO GAME COVER ART" is displayed in all capital letters, written in a bold, straightforward font, possibly Helvetica. All the text elements are centered within the image, suggesting that this might be a preliminary design file intended for a designer working on a project related to video game cover art."""
                 # },
                 {
                     'role': 'user',
-                    'content': f"Transcriptions: {transcriptions}"
+                    'content': f"{transcriptions}"
                 }
             ]
         else:
             messages = [
                 {
                     'role': 'system',
-                    'content': "Enhance the quality of the raw caption into a high-quality transcript. Provide clear, descriptive, and professional outputs. Please make sure to include every single detail from the transcription; do not be too concise. Avoid rewording things if it makes the output more vague. If there are any culturally distinct elements, please explain them in detail. Also, it's okay if the output is longer than the input. It is important that you do not include any other text or formatting besides the summary itself. For example, do not include 'Summary:', 'The transcription describes', 'The first transcription mentions' or any other meta text; it is critical that your only output is the caption with all of the details from the original caption. Do not include any hallucinations or made-up information that isn't in the provided transcription."
+                        'content': "Enhance the quality of the raw caption into a high-quality transcript while preserving the original language. Provide clear, descriptive, and professional outputs. Please make sure to include every single detail from the transcription; do not be too concise. Avoid rewording things if it makes the output more vague. If there are any culturally distinct elements, please explain them in detail. Also, it's okay if the output is longer than the input. It is important that you do not include any other text or formatting besides the summary itself. For example, do not include 'Summary:', 'The transcription describes', 'The first transcription mentions' or any other meta text; it is critical that your only output is the caption with all of the details from the original caption. Ensure that your output is the same as the language of the input. Do not include any hallucinations or made-up information that isn't in the provided transcription."
                 },
                 # {
                 #     'role': 'user',
@@ -74,7 +73,7 @@ with open(output_file, mode='a', newline='', encoding='utf-8') as f:
                 # },
                 # {
                 #     'role': 'assistant',
-                #     'content': """A large brown suckerfish, commonly known as a plecostomus or pleco catfish, is prominently displayed inside a home fish tank. This species, recognized for its sucker-like mouth, clings to various surfaces within the tank, feeding on algae and other nutritional debris. This natural cleaning behavior helps maintain the tank's cleanliness, making it a popular choice among aquarium enthusiasts. In the image, the suckerfish is currently affixed to a piece of driftwood. Surrounding it are artificial plants anchored at the base of the aquarium, which is lined with black rocks. The plecostomus, often seen in household aquariums, contributes to the pristine condition of the tank by continuously scouring the glass and other surfaces, ensuring a clean and healthy environment."""
+                #     'content': """Output: A large brown suckerfish, commonly known as a plecostomus or pleco catfish, is prominently displayed inside a home fish tank. This species, recognized for its sucker-like mouth, clings to various surfaces within the tank, feeding on algae and other nutritional debris. This natural cleaning behavior helps maintain the tank's cleanliness, making it a popular choice among aquarium enthusiasts. In the image, the suckerfish is currently affixed to a piece of driftwood. Surrounding it are artificial plants anchored at the base of the aquarium, which is lined with black rocks. The plecostomus, often seen in household aquariums, contributes to the pristine condition of the tank by continuously scouring the glass and other surfaces, ensuring a clean and healthy environment."""
                 # },
                 # {
                 #     'role': 'user',
@@ -82,19 +81,19 @@ with open(output_file, mode='a', newline='', encoding='utf-8') as f:
                 # },
                 # {
                 #     'role': 'assistant',
-                #     'content': """In the Barrett-Jackson corporate office, an extraordinary conference room captures the essence of automotive passion and innovation. Dominating the room is a unique conference table, ingeniously incorporated around a vintage black 1970s Porsche 911. The classic sports car, sitting as the centerpiece, is encased in a large clear glass tabletop, transforming it into a functional yet remarkable discussion surface. Surrounding this one-of-a-kind table are several office chairs fashioned from racing seats, complete with roller wheels and armrests, epitomizing the fusion of comfort and high-octane style. The room's design boasts a color scheme of red, white, and black, with striking red lighting and accents complementing the white wall panels. The back wall prominently features the Barrett-Jackson logo, reiterating the prestigious automotive dealer's identity. Underneath the car, red neon lights cast a captivating glow, accentuating the vintage Porsche's sleek lines and reinforcing the room's thematic cohesion. This conference room is a testament to Barrett-Jackson's dedication to automotive excellence and distinctive style."""
+                #     'content': """Output: In the Barrett-Jackson corporate office, an extraordinary conference room captures the essence of automotive passion and innovation. Dominating the room is a unique conference table, ingeniously incorporated around a vintage black 1970s Porsche 911. The classic sports car, sitting as the centerpiece, is encased in a large clear glass tabletop, transforming it into a functional yet remarkable discussion surface. Surrounding this one-of-a-kind table are several office chairs fashioned from racing seats, complete with roller wheels and armrests, epitomizing the fusion of comfort and high-octane style. The room's design boasts a color scheme of red, white, and black, with striking red lighting and accents complementing the white wall panels. The back wall prominently features the Barrett-Jackson logo, reiterating the prestigious automotive dealer's identity. Underneath the car, red neon lights cast a captivating glow, accentuating the vintage Porsche's sleek lines and reinforcing the room's thematic cohesion. This conference room is a testament to Barrett-Jackson's dedication to automotive excellence and distinctive style."""
                 # },
                 {
                     'role': 'user',
-                    'content': f"Transcription: {transcriptions[0]}"
+                    'content': f"{transcriptions[0]}"
                 }
             ]
 
         try:
             summary = get_gpt_response(messages)
             summary = summary.replace("\n", " ").replace("\r", " ")
-            writer.writerow([image_link, languages, ids, transcriptions, distinct, explanations, summary])
+            writer.writerow([image_link, language, ids, transcriptions, distinct, explanations, summary])
             f.flush()
-            print(f"Captioned group: {image_link}, {languages}")
+            print(f"Captioned group: {image_link}, {language}")
         except Exception as e:
-            print(f"Error processing group {image_link}, {languages}: {e}")
+            print(f"Error processing group {image_link}, {language}: {e}")

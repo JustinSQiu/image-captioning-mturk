@@ -1,4 +1,4 @@
-from unsloth import FastVisionModel # FastLanguageModel for LLMs
+from unsloth import FastVisionModel
 
 # 4bit pre quantized models we support for 4x faster downloading + no OOMs.
 fourbit_models = [
@@ -16,32 +16,50 @@ fourbit_models = [
 
     "unsloth/llava-v1.6-mistral-7b-hf-bnb-4bit",      # Any Llava variant works!
     "unsloth/llava-1.5-7b-hf-bnb-4bit",
-] # More models at https://huggingface.co/unsloth
+]
 
-# Load model
-model, tokenizer = FastVisionModel.from_pretrained(
-    # "unsloth/Qwen2-VL-7B-Instruct",
-    # "unsloth/Qwen2.5-VL-7B-Instruct",
-    # "unsloth/Qwen2.5-VL-3B-Instruct-unsloth-bnb-4bit",
-    "unsloth/Llama-3.2-11B-Vision-Instruct-unsloth-bnb-4bit",
-    load_in_4bit = True, # Use 4bit to reduce memory use. False for 16bit LoRA.
-    use_gradient_checkpointing = "unsloth", # True or "unsloth" for long context
-)
+def get_llama_11b_model():
+    model, tokenizer = FastVisionModel.from_pretrained(
+        "unsloth/Llama-3.2-11B-Vision-Instruct-unsloth-bnb-4bit",
+        load_in_4bit = True,
+        use_gradient_checkpointing = "unsloth",
+    )
+    model = FastVisionModel.get_peft_model(
+        model,
+        finetune_vision_layers     = True,
+        finetune_language_layers   = True,
+        finetune_attention_modules = True,
+        finetune_mlp_modules       = True,
 
+        r = 32,
+        lora_alpha = 32,
+        lora_dropout = 0,
+        bias = "none",
+        random_state = 42,
+        use_rslora = False,
+        loftq_config = None,
+    )
+    return model, tokenizer
 
-model = FastVisionModel.get_peft_model(
-    model,
-    finetune_vision_layers     = True, # False if not finetuning vision layers
-    finetune_language_layers   = True, # False if not finetuning language layers
-    finetune_attention_modules = True, # False if not finetuning attention layers
-    finetune_mlp_modules       = True, # False if not finetuning MLP layers
+def get_qwen_7b_model():
+    model, tokenizer = FastVisionModel.from_pretrained(
+        "unsloth/Qwen2.5-VL-7B-Instruct-bnb-4bit",
+        load_in_4bit = True,
+        use_gradient_checkpointing = "unsloth",
+    )
+    model = FastVisionModel.get_peft_model(
+        model,
+        finetune_vision_layers     = True,
+        finetune_language_layers   = True,
+        finetune_attention_modules = True,
+        finetune_mlp_modules       = True,
 
-    r = 32,           # The larger, the higher the accuracy, but might overfit
-    lora_alpha = 32,  # Recommended alpha == r at least
-    lora_dropout = 0,
-    bias = "none",
-    random_state = 42,
-    use_rslora = False,  # We support rank stabilized LoRA
-    loftq_config = None, # And LoftQ
-    # target_modules = "all-linear", # Optional now! Can specify a list if needed
-)
+        r = 32,
+        lora_alpha = 32,
+        lora_dropout = 0,
+        bias = "none",
+        random_state = 42,
+        use_rslora = False,
+        loftq_config = None,
+    )
+    return model, tokenizer

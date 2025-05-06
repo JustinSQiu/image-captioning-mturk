@@ -20,4 +20,3 @@ python --version
 huggingface-cli login --token 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
 
 python -m pipeline.1_transcription
-# python test_transcription.py
