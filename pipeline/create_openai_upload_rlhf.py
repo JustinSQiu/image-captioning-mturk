@@ -4,14 +4,14 @@ from datasets import load_dataset
 
 def main(split="train"):
     ds = load_dataset(
-        "justinsunqiu/multilingual_transcriptions_summarized_by_native_nonnative",
+        "justinsunqiu/multilingual_transcriptions_summarized_by_type_final",
         split=split
     )
     groups = defaultdict(list)
     for ex in ds:
         groups[ex["image_link"]].append(ex)
 
-    with open(f"processed_output/openai_rlhf_{split}.jsonl", "w", encoding="utf-8") as fout:
+    with open(f"processed_output/openai_rlhf_{split}_final.jsonl", "w", encoding="utf-8") as fout:
         for url, examples in groups.items():
             native   = [e for e in examples if e["annotation_type"] == "native"]
             nonnative = [e for e in examples if e["annotation_type"] == "nonnative"]
@@ -32,7 +32,7 @@ def main(split="train"):
                         # },
                         {
                             "role": "user",
-                            "content": "Provide a detailed caption of this image."
+                            "content": "Write a detailed caption for this image."
                         },
                         # {
                         #     "role": "user",

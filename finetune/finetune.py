@@ -53,7 +53,7 @@ elif args.dataset == "english_translated_transcriptions":
     train_dataset, eval_dataset = get_english_translated_transcriptions_dataset()
 else:
     raise ValueError("Dataset not supported! Please use cvqa or multilingual_transcriptions.")
-
+'''
 trainer = SFTTrainer(
     model = model,
     tokenizer = tokenizer,
@@ -71,9 +71,9 @@ trainer = SFTTrainer(
         bf16 = is_bf16_supported(),
         logging_steps = 1,
 
-        save_strategy="steps",
-        save_steps=500,
-        save_total_limit=3,
+        # save_strategy="steps",
+        # save_steps=500,
+        # save_total_limit=1,
 
         optim = "adamw_8bit",
         weight_decay = 0.01,
@@ -97,16 +97,17 @@ trainer_stats = trainer.train()
 
 model.save_pretrained(args.output_dir)
 tokenizer.save_pretrained(args.output_dir)
+'''
 
-# print('Loading model from disk...', flush=True)
+print('Loading model from disk...', flush=True)
 
-# local_dir = os.path.abspath(f"finetune/models/{args.output_dir}")
-# assert os.path.isdir(local_dir), f"{local_dir} not found!"
+local_dir = os.path.abspath(f"{args.output_dir}")
+assert os.path.isdir(local_dir), f"{local_dir} not found!"
 
 
-# model, tokenizer = FastVisionModel.from_pretrained(
-#     model_name = f"{local_dir}", # YOUR MODEL YOU USED FOR TRAINING
-#     load_in_4bit = True, # Set to False for 16bit LoRA
-# )
+model, tokenizer = FastVisionModel.from_pretrained(
+    model_name = f"{local_dir}", # YOUR MODEL YOU USED FOR TRAINING
+    load_in_4bit = True, # Set to False for 16bit LoRA
+)
 
 model.push_to_hub_merged(f"justinsunqiu/{args.output_dir}", tokenizer, token = hf_token)

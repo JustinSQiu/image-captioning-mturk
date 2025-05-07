@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=finetune_qwen_summaries
-#SBATCH --output=slurm_output/output_inference.txt
+#SBATCH --job-name=inference_english
+#SBATCH --output=finetune/slurm_output/output_inference.txt
 #SBATCH --partition=p_nlp
 #SBATCH --gpus=1
 #SBATCH --cpus-per-task=1
@@ -23,4 +23,4 @@ wandb login --relogin 3449e394fda9eacb21f123572143a9c0c6dd3069
 
 export HF_HOME=/nlp/data/huggingface_cache
 
-python inference.py
+python -m finetune.inference --model_dir english_translated_llama_final --dataset cvqa --num_samples 3

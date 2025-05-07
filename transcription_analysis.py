@@ -5,7 +5,7 @@ pd.options.display.max_rows = 200
 pd.options.display.max_colwidth = 300
 pd.options.display.max_columns = 100
 
-df = pd.read_csv('/home1/j/jsq/dev/image-captioning-mturk/processed_output/output_transcription_cvqa_whisper_only_language_specified.csv')
+df = pd.read_csv('/home1/j/jsq/dev/image-captioning-mturk/processed_output/output_transcription_translated_manually_cleaned_final.csv')
 
 language_counts = df["language"].value_counts()
 print("Annotations per language:")

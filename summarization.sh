@@ -9,10 +9,4 @@
 
 source /nlp/data/jsq/thesis/bin/activate
 
-# cd /home1/j/jsq/dev/image-captioning-mturk
-
-python -m pipeline.5a_summarization
-
-python -m pipeline.5b_summarization_english
-
-python -m pipeline.5c_summarization_native_nonnative
+python -m pipeline.6_extract_qa
