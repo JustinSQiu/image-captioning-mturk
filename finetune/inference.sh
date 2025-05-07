@@ -23,4 +23,6 @@ wandb login --relogin 3449e394fda9eacb21f123572143a9c0c6dd3069
 
 export HF_HOME=/nlp/data/huggingface_cache
 
-python -m finetune.inference --model_dir english_translated_llama_final --dataset cvqa --num_samples 3
+python -m finetune.inference \
+    --model_dir english_translated_llama_final \
+    --dataset english_translated_transcriptions
