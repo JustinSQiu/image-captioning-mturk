@@ -1,13 +1,13 @@
 #!/bin/bash
-#SBATCH --job-name=transcribe_lang_specified
-#SBATCH --output=slurm_output/output_transcription_new.txt
+#SBATCH --job-name=synthetic_data
+#SBATCH --output=slurm_output/output_synthetic.txt
 #SBATCH --partition=p_nlp
-#SBATCH --gpus=1
+#SBATCH --gpus=0
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=128GB
 #SBATCH --constraint=48GBgpu
 
-source /nlp/data/jsq/venv_thesis_transcribe/bin/activate
+source /nlp/data/jsq/thesis/bin/activate
 
 module load cuda/11.7
 
@@ -19,4 +19,4 @@ python --version
 
 huggingface-cli login --token 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
 
-python -m pipeline.1_transcription
+python -m pipeline.gpt4o_synthetic_data.py

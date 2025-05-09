@@ -85,6 +85,25 @@ def convert_to_conversation(sample, multilingual=False):
     ]
     return {"messages": conversation}
 
+
+def convert_to_conversation_vqa(sample, multilingual=False):
+    conversation = [
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": sample["question"]},
+                {"type": "image", "image": sample["image"]},
+            ],
+        },
+        {
+            "role": "assistant",
+            "content": [
+                {"type": "text", "text": sample["answer"]},
+            ],
+        },
+    ]
+    return {"messages": conversation}
+
 def convert_to_conversation_cvqa(sample):
     conversation = [
         {
@@ -143,12 +162,29 @@ def get_english_translated_transcriptions_dataset(seed=42):
     converted_eval = [convert_to_conversation(sample) for sample in eval_dataset]
     return converted_train, converted_eval
 
-def get_cvqa_dataset(eval_size=0.05, seed=42):
-    dataset = load_dataset("afaji/cvqa", split="train")
+def get_cvqa_dataset(eval_size=0.05, seed=42, eval_only=False):
+    dataset = load_dataset("afaji/cvqa", split="test")
+    if eval_only:
+        return dataset
     dataset = dataset.shuffle(seed=seed)
-    dataset = dataset.map(to_pillow, batched=True, num_proc=4)
+    # dataset = dataset.map(to_pillow, batched=True, num_proc=4)
     converted = [convert_to_conversation_cvqa(sample) for sample in dataset]
     split_idx = int(eval_size * len(converted))
     eval_dataset = converted[:split_idx]
     train_dataset = converted[split_idx:]
     return train_dataset, eval_dataset
+
+def get_vqa_dataset(seed=42):
+    train_dataset = load_dataset(
+        "justinsunqiu/multilingual_vqa_final", split="train"
+    )
+    eval_dataset = load_dataset(
+        "justinsunqiu/multilingual_vqa_final", split="test"
+    )
+    train_dataset = train_dataset.shuffle(seed=seed)
+    eval_dataset = eval_dataset.shuffle(seed=seed)
+    train_dataset = train_dataset.map(to_pillow, batched=True, num_proc=4)
+    eval_dataset = eval_dataset.map(to_pillow, batched=True, num_proc=4)
+    converted_train = [convert_to_conversation_vqa(sample) for sample in train_dataset]
+    converted_eval = [convert_to_conversation_vqa(sample) for sample in eval_dataset]
+    return converted_train, converted_eval

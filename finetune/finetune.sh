@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=finetune_llama_multilingual
-#SBATCH --output=finetune/slurm_output/output_finetune_llama_multilingual.txt
+#SBATCH --job-name=finetune_llama_multilingual_vqa
+#SBATCH --output=finetune/slurm_output/output_finetune_llama_multilingual_vqa.txt
 #SBATCH --partition=p_nlp
 #SBATCH --gpus=1
 #SBATCH --cpus-per-task=1

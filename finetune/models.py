@@ -71,24 +71,24 @@ def get_trained_model(local_dir):
         max_seq_length = 2048,
     )
     return model, tokenizer
-    model, tokenizer = FastVisionModel.from_pretrained(
-        f"justinsunqiu/{local_dir}",
-        load_in_4bit = True,
-        use_gradient_checkpointing = "unsloth",
-    )
-    model = FastVisionModel.get_peft_model(
-        model,
-        finetune_vision_layers     = True,
-        finetune_language_layers   = True,
-        finetune_attention_modules = True,
-        finetune_mlp_modules       = True,
+    # model, tokenizer = FastVisionModel.from_pretrained(
+    #     f"justinsunqiu/{local_dir}",
+    #     load_in_4bit = True,
+    #     use_gradient_checkpointing = "unsloth",
+    # )
+    # model = FastVisionModel.get_peft_model(
+    #     model,
+    #     finetune_vision_layers     = True,
+    #     finetune_language_layers   = True,
+    #     finetune_attention_modules = True,
+    #     finetune_mlp_modules       = True,
 
-        r = 32,
-        lora_alpha = 32,
-        lora_dropout = 0,
-        bias = "none",
-        random_state = 42,
-        use_rslora = False,
-        loftq_config = None,
-    )
-    return model, tokenizer
+    #     r = 32,
+    #     lora_alpha = 32,
+    #     lora_dropout = 0,
+    #     bias = "none",
+    #     random_state = 42,
+    #     use_rslora = False,
+    #     loftq_config = None,
+    # )
+    # return model, tokenizer

@@ -11,8 +11,8 @@ from trl import SFTTrainer, SFTConfig
 import numpy as np
 
 from keys import hf_token
-from finetune.data import get_cvqa_dataset, get_multilingual_transcriptions_dataset, get_english_translated_transcriptions_dataset
-from finetune.models import get_llama_11b_model, get_qwen_7b_model
+from finetune.data import get_cvqa_dataset, get_multilingual_transcriptions_dataset, get_english_translated_transcriptions_dataset, get_vqa_dataset
+from finetune.models import get_llama_11b_model, get_qwen_7b_model, get_trained_model
 
 parser = argparse.ArgumentParser(description="Finetune a vision model on a dataset")
 parser.add_argument("--output_dir", type=str, default="outputs/full",
@@ -32,8 +32,8 @@ if args.model == "llama":
 elif args.model == "qwen":
     model, tokenizer = get_qwen_7b_model()
 else:
-    raise ValueError("Model not supported! Please use llama or qwen.")
-
+    model, tokenizer = get_trained_model(args.model)
+    
 FastVisionModel.for_training(model) # Enable for training!
 
 if args.dataset == "cvqa":
@@ -42,6 +42,8 @@ elif args.dataset == "multilingual_transcriptions":
     train_dataset, eval_dataset = get_multilingual_transcriptions_dataset()
 elif args.dataset == "english_translated_transcriptions":
     train_dataset, eval_dataset = get_english_translated_transcriptions_dataset()
+elif args.dataset == "english_vqa":
+    train_dataset, eval_dataset = get_vqa_dataset()
 else:
     raise ValueError("Dataset not supported! Please use cvqa or multilingual_transcriptions.")
 
@@ -74,7 +76,7 @@ trainer = SFTTrainer(
         output_dir=args.output_dir,
         report_to = "wandb",
         eval_strategy = "steps",
-        eval_steps = 100,
+        eval_steps = 50,
         eval_on_start = True,
 
         remove_unused_columns = False,

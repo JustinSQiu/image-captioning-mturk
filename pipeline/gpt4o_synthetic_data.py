@@ -1,7 +1,7 @@
 """
 caption_cvqa.py
 Generate one English caption per unique image in the afaji/cvqa dataset
-and append results to processed_output/output_cvqa_captions_synthetic.csv
+and append results to processed_output/output_cvqa_captions_synthetic_final.csv
 """
 
 import os, csv, base64
@@ -10,8 +10,8 @@ from datasets import load_dataset
 from PIL import Image
 from helpers import get_gpt_response
 
-OUTPUT_FILE = "processed_output/output_cvqa_captions_synthetic.csv"
-MODEL_NAME  = "ft:gpt-4o-2024-08-06:iarpa-hiatus-pausit-team:summaries-rlhf:BSgLWUY0"
+OUTPUT_FILE = "processed_output/output_cvqa_captions_synthetic_final.csv"
+MODEL_NAME  = "ft:gpt-4o-2024-08-06:iarpa-hiatus-pausit-team:summaries-final:BUUcwZUl"
 
 processed_ids = set()
 if os.path.exists(OUTPUT_FILE) and os.stat(OUTPUT_FILE).st_size > 0:
@@ -59,7 +59,7 @@ with open(OUTPUT_FILE, mode="a", newline="", encoding="utf-8") as fout:
                         "role": "user",
                         "content": [
                             { "type": "text",
-                            "text": f"Provide a detailed caption of this image, with a strong focus on cultural elements but also an emphasis on all details." + f"The image is from the culture/language of {row['Subset']}; if useful, incorporate that in your caption." if row["Subset"] else "" },
+                            "text": f"Write a detailed caption for this image." },
                             { "type": "image_url",
                             "image_url": { "url": data_url } }
                         ]
