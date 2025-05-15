@@ -1,87 +1,111 @@
-from unsloth import FastVisionModel
-import argparse, torch
+#!/usr/bin/env python3
+"""
+Caption any number of images from their URLs and save the results to a CSV file.
+
+Example
+-------
+python caption_from_urls.py \
+    --model_dir justinsunqiu/english_translated_llama_final \
+    --device cuda:0 \
+    --output_csv my_captions.csv
+"""
+
+import argparse
+import csv
+import io
+from pathlib import Path
+from typing import List
+
+import torch
+import requests
 from PIL import Image
 from transformers import TextStreamer
+from unsloth import FastVisionModel
+from datasets import load_dataset
 
-# --- your helper loaders --------------------------------------------------
-from finetune.data import (
-    get_cvqa_dataset,
-    get_multilingual_transcriptions_dataset,
-    get_english_translated_transcriptions_dataset,
-)
-from finetune.models import get_trained_model, get_llama_11b_model, get_qwen_7b_model
-# --------------------------------------------------------------------------
+# local helpers
+from finetune.models import get_trained_model, get_llama_11b_model
 
-def load_eval_dataset(name):
-    if name == "cvqa":
-        return get_cvqa_dataset()[1]
-    if name == "multilingual_transcriptions":
-        return get_multilingual_transcriptions_dataset()[1]
-    if name == "english_translated_transcriptions":
-        return get_english_translated_transcriptions_dataset()[1]
-    raise ValueError("Unknown dataset")
 
-def build_prompt(ex, dataset_name):
-    """
-    Return a *single* instruction string that works well with the sample.
-    Adapt this stub however you like.
-    """
-    if dataset_name == "cvqa":
-        # the dataset already has a question we want answered
-        return ex["question"]
+def load_image_from_url(url: str, timeout: float = 10.0) -> Image.Image:
+    """Download `url` and return a PIL.Image (RGB)."""
+    resp = requests.get(url, timeout=timeout)
+    resp.raise_for_status()
+    return Image.open(io.BytesIO(resp.content)).convert("RGB")
 
-    # Both transcription datasets want free‑form descriptions / captions
-    if dataset_name == "multilingual_transcriptions":
-        lang = ex.get("language", "unknown language")
-        return (
-            f"You are a cultural historian. The following caption is in {lang}:\n"
-            f"---\n{ex['transcription']}\n---\n"
-            "Describe the most culturally distinctive aspect visible in the image."
-        )
 
-    if dataset_name == "english_translated_transcriptions":
-        return (
-            "You are a detailed image captioner. "
-            "Give an accurate, fluent English description of the image."
-        )
+def get_images_links() -> List[str]:
+    """Load image links from the test split of the multilingual dataset."""
+    dataset = load_dataset(
+        "justinsunqiu/multilingual_transcriptions_translated_english_final",
+        split="test",
+    )
+    return dataset["image_link"]
 
-    return "Describe what you see."
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_dir",
+    parser.add_argument(
+        "--model_dir",
         default="justinsunqiu/english_translated_llama_final",
-        help="Local path or HF repo ID for the *merged* weights")
-    parser.add_argument("--dataset", choices=[
-        "cvqa", "multilingual_transcriptions",
-        "english_translated_transcriptions"
-    ], default="english_translated_transcriptions")
-    parser.add_argument("--device",
-        default="cuda:0" if torch.cuda.is_available() else "cpu")
+        help="Local path or HF repo ID for the *(merged)* weights",
+    )
+    parser.add_argument(
+        "--image_urls",
+        nargs="+",
+        help="One or more image URLs to caption. If omitted, uses the dataset links.",
+    )
+    parser.add_argument(
+        "--device",
+        default="cuda:0" if torch.cuda.is_available() else "cpu",
+        help="Where to run inference",
+    )
+    parser.add_argument(
+        "--output_csv",
+        default="processed_output/captions.csv",
+        help="Path to save the <url, caption> rows (CSV)",
+    )
     args = parser.parse_args()
 
-    model, tokenizer = get_trained_model(args.model_dir)
-    # model, tokenizer = get_llama_11b_model()
-    FastVisionModel.for_inference(model) # Enable for inference!
+    # --- Load model ------------------------------------------------------------------
+    if args.model_dir == "llama-11b":
+        model, tokenizer = get_llama_11b_model()
+    else:
+        model, tokenizer = get_trained_model(args.model_dir)
+    FastVisionModel.for_inference(model)
 
-    eval_ds = load_eval_dataset(args.dataset)
-    for i in range(5):
-        sample  = eval_ds[i]
-        print(sample)
-        image = sample["messages"][0]["content"][1]["image"]
-        
-        instruction = build_prompt(sample, args.dataset)
+    text_streamer = TextStreamer(tokenizer, skip_prompt=True)
+
+    # --- Determine image set ---------------------------------------------------------
+    image_urls = args.image_urls if args.image_urls else get_images_links()
+    if not image_urls:
+        raise ValueError("No image URLs provided and dataset links unavailable.")
+
+    # --- Caption each image ----------------------------------------------------------
+    rows = []  # will store {"url": url, "caption": caption}
+
+    instruction = "Write a detailed caption for this image."
+
+    for url in image_urls:
+        print(f"\n🔗  Captioning {url}...")
+        try:
+            image = load_image_from_url(url)
+        except Exception as e:
+            print(f"[WARN] Could not load {url}: {e}")
+            continue
 
         messages = [
-            {"role": "user", "content": [
-                {"type": "image"},
-                {"type": "text", "text": instruction}
-            ]}
+            {
+                "role": "user",
+                "content": [
+                    {"type": "image"},
+                    {"type": "text", "text": instruction},
+                ],
+            }
         ]
-        chat_text = tokenizer.apply_chat_template(
-            messages, add_generation_prompt=True
-        )
+        chat_text = tokenizer.apply_chat_template(messages, add_generation_prompt=True)
 
+        # Tokenizer accepts PIL image directly (UnsLoTH vision wrapper handles it)
         inputs = tokenizer(
             image,
             chat_text,
@@ -89,15 +113,37 @@ def main():
             return_tensors="pt",
         ).to(args.device)
 
-        text_streamer = TextStreamer(tokenizer, skip_prompt=True)
-        _ = model.generate(
+        # Generate caption (also stream to console)
+        output_ids = model.generate(
             **inputs,
-            streamer        = text_streamer,
-            max_new_tokens  = 1024,
-            use_cache       = True,
-            temperature     = 1.2,
-            min_p           = 0.1,
+            streamer=text_streamer,
+            max_new_tokens=2048,
+            temperature=1.2,
+            min_p=0.1,
+            use_cache=True,
         )
+
+        # Decode only the new text (after the prompt)
+        prompt_len = inputs["input_ids"].shape[-1]
+        generated_caption = tokenizer.decode(
+            output_ids[0][prompt_len:], skip_special_tokens=True
+        ).strip()
+
+        print(f"\n🖼️  Caption for {url}: {generated_caption}")
+
+        rows.append({"url": url, "caption": generated_caption})
+
+    # --- Save captions to CSV --------------------------------------------------------
+    output_path = Path(args.output_csv).expanduser()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with output_path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=["url", "caption"])
+        writer.writeheader()
+        writer.writerows(rows)
+
+    print(f"\n✅  Saved {len(rows)} captions to {output_path.resolve()}")
+
 
 if __name__ == "__main__":
     main()

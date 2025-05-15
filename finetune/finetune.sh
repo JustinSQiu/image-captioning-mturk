@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=finetune_llama_multilingual_vqa
-#SBATCH --output=finetune/slurm_output/output_finetune_llama_multilingual_vqa.txt
+#SBATCH --job-name=finetune_llama_backtranslated_vqa_final_small
+#SBATCH --output=finetune/slurm_output/output_finetune_llama_backtranslated_vqa_final_small.txt
 #SBATCH --partition=p_nlp
 #SBATCH --gpus=1
 #SBATCH --cpus-per-task=1
@@ -9,7 +9,7 @@
 
 # Usage: sbatch finetune_qwen.sh <output_dir> <model_name> <dataset>
 if [ "$#" -lt 3 ]; then
-  echo "Usage: $0 <output_dir> <model_name> <dataset>"
+  echo "Usage: $0 <output_dir> <model_name> <dataset> <epochs>"
   exit 1
 fi
 
@@ -33,3 +33,4 @@ python -m finetune.finetune \
   --output_dir "${OUTPUT_DIR}" \
   --model "$2" \
   --dataset "$3" \
+  --epochs "$4" \

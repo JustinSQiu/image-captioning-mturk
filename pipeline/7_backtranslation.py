@@ -80,8 +80,8 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 from helpers import get_gpt_response
 
-input_file  = 'processed_output/output_summarized_by_image_english_final.csv'
-output_file = 'processed_output/output_summarized_by_english_backtranslated_final.csv'
+input_file  = 'processed_output/output_vqa_final.csv'
+output_file = 'processed_output/output_vqa_backtranslated_final.csv'
 
 df_in = pd.read_csv(input_file)
 
@@ -103,41 +103,52 @@ fout = open(output_file, 'a', newline='', encoding='utf‑8')
 writer = csv.writer(fout)
 
 if os.path.getsize(output_file) == 0:
-    header = df_in.columns.tolist() + ['backtranslation']
+    header = df_in.columns.tolist() + ['question_backtranslation', 'answer_backtranslation', 'language']
     writer.writerow(header)
     fout.flush()
 
 def translate_and_write(row_series, language):
     """Translate one row into one language and append to CSV (thread‑safe)."""
     row_id       = str(row_series['image_link'])
-    transcription = row_series['summary']
-    messages = [
+    q_messages = [
         {
             'role': 'system',
             'content': (
-                f"Translate the following transcription into {language}. "
+                f"Translate the following into {language}. "
                 "Preserve the original meaning, tone, and specific details. "
                 f"Ensure your output is **entirely in {language}**—no extra headings or meta text."
             )
         },
-        {'role': 'user', 'content': f"Transcription: {transcription}"}
+        {'role': 'user', 'content': f"Transcription: {row_series['question']}"}
+    ]
+    a_messages = [
+        {
+            'role': 'system',
+            'content': (
+                f"Translate the following into {language}. "
+                "Preserve the original meaning, tone, and specific details. "
+                f"Ensure your output is **entirely in {language}**—no extra headings or meta text."
+            )
+        },
+        {'role': 'user', 'content': f"Transcription: {row_series['answer']}"}
     ]
     try:
-        translation = get_gpt_response(messages).replace('\n', ' ').replace('\r', ' ')
+        q_translation = get_gpt_response(q_messages).replace('\n', ' ').replace('\r', ' ')
+        a_translation = get_gpt_response(a_messages).replace('\n', ' ').replace('\r', ' ')
         print(f"[{row_id}] → {language}: done")
     except Exception as e:
         print(f"[{row_id}] → {language}: ERROR → {e}")
         translation = ""
     with write_lock:
-        writer.writerow(row_series.tolist() + [translation])
+        writer.writerow(row_series.tolist() + [q_translation, a_translation, language])
         fout.flush()
 
 with ThreadPoolExecutor(max_workers=4) as pool:
     futures = []
     for _, row in df_in.iterrows():
-        if str(row['image_link']) in processed_ids:
-            print(f"[{row['image_link']}] already processed; skipping.")
-            continue
+        # if str(row['image_link']) in processed_ids:
+        #     print(f"[{row['image_link']}] already processed; skipping.")
+        #     continue
 
         for lang in languages:
             # `.copy()` so each thread owns its own data and is pickle‑safe
@@ -148,3 +159,5 @@ with ThreadPoolExecutor(max_workers=4) as pool:
 
 fout.close()
 print("🎉  All translations complete.")
+# sbatch finetune/finetune.sh backtranslated_captions_llama_final llama backtranslated_captions
+# fix the vqa thing

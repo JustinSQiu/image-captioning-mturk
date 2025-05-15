@@ -3,3 +3,6 @@ keys.py
 slurm_output
 justinsunqiu
 unsloth_compiled_cache/
+wandb
+processed_output
+*.csv

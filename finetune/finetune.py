@@ -11,7 +11,7 @@ from trl import SFTTrainer, SFTConfig
 import numpy as np
 
 from keys import hf_token
-from finetune.data import get_cvqa_dataset, get_multilingual_transcriptions_dataset, get_english_translated_transcriptions_dataset, get_vqa_dataset
+from finetune.data import get_cvqa_dataset, get_multilingual_transcriptions_dataset, get_english_translated_transcriptions_dataset, get_vqa_dataset, get_english_translated_transcriptions_synthetic_dataset, get_backtranslated_transcriptions_dataset, get_backtranslated_vqa_dataset
 from finetune.models import get_llama_11b_model, get_qwen_7b_model, get_trained_model
 
 parser = argparse.ArgumentParser(description="Finetune a vision model on a dataset")
@@ -21,6 +21,8 @@ parser.add_argument("--model", type=str, default="llama",
                     help="Model to use for finetuning. Options: llama, qwen")
 parser.add_argument("--dataset", type=str, default="multilingual_transcriptions",
                     help="Dataset to use for finetuning. Options: multilingual_transcriptions, cvqa, english_translated_transcriptions")
+parser.add_argument("--epochs", type=int, default=3, help="Number of epochs to train for")
+
 args = parser.parse_args()
 
 os.environ["HF_HOME"] = "/nlp/data/huggingface_cache"
@@ -44,6 +46,12 @@ elif args.dataset == "english_translated_transcriptions":
     train_dataset, eval_dataset = get_english_translated_transcriptions_dataset()
 elif args.dataset == "english_vqa":
     train_dataset, eval_dataset = get_vqa_dataset()
+elif args.dataset == "synthetic_captions":
+    train_dataset, eval_dataset = get_english_translated_transcriptions_synthetic_dataset()
+elif args.dataset == "backtranslated_captions":
+    train_dataset, eval_dataset = get_backtranslated_transcriptions_dataset()
+elif args.dataset == "backtranslated_vqa":
+    train_dataset, eval_dataset = get_backtranslated_vqa_dataset()
 else:
     raise ValueError("Dataset not supported! Please use cvqa or multilingual_transcriptions.")
 
@@ -58,7 +66,7 @@ trainer = SFTTrainer(
         gradient_accumulation_steps = 4,
         warmup_ratio = 0.05,
         # max_steps = 500,
-        num_train_epochs = 3,
+        num_train_epochs = args.epochs,
         learning_rate = 5e-5,
         fp16 = not is_bf16_supported(),
         bf16 = is_bf16_supported(),

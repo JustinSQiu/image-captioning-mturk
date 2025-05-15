@@ -1,14 +1,13 @@
 #!/bin/bash
-#SBATCH --job-name=synthetic_generation
-#SBATCH --output=slurm_output/output_synthetic_generation.txt
+#SBATCH --job-name=eval_cvqa_llama_final
+#SBATCH --output=evaluation/slurm_output/output_cvqa_eval_llama_final.txt
 #SBATCH --partition=p_nlp
-#SBATCH --gpus=0
-#SBATCH --cpus-per-task=4
-#SBATCH --mem=128GB
+#SBATCH --gpus=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=256GB
 #SBATCH --constraint=48GBgpu
 
 source /nlp/data/jsq/thesis/bin/activate
-
 module load cuda/11.7
 
 nvidia-smi
@@ -18,5 +17,8 @@ python -c "import torch; print('PyTorch Version:', torch.__version__)"
 python --version
 
 huggingface-cli login --token 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
+wandb login --relogin 3449e394fda9eacb21f123572143a9c0c6dd3069
 
-python -m pipeline.gpt4o_synthetic_data
+export HF_HOME=/nlp/data/huggingface_cache
+
+python -m evaluation.cvqa_eval --model llama

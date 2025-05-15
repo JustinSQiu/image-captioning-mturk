@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=cvqa_eval
-#SBATCH --output=evaluation/slurm_output/output.txt
+#SBATCH --job-name=eval_gpt
+#SBATCH --output=evaluation/slurm_output/output_evaluate_gpt_multilingual.txt
 #SBATCH --partition=p_nlp
-#SBATCH --gpus=1
+#SBATCH --gpus=0
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=256GB
 #SBATCH --constraint=48GBgpu
@@ -21,4 +21,4 @@ wandb login --relogin 3449e394fda9eacb21f123572143a9c0c6dd3069
 
 export HF_HOME=/nlp/data/huggingface_cache
 
-python -m evaluation.cvqa_eval
+python -m evaluation.dca_benchmark_eval
