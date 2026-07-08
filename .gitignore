@@ -6,3 +6,11 @@ unsloth_compiled_cache/
 wandb
 processed_output
 *.csv
+mmid/
+mmid_images/
+mturk_output/
+venv/
+cvqa/
+filtered_images/
+audio/
+.DS_Store
